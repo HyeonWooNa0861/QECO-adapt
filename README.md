@@ -52,7 +52,7 @@ Regenerate formula visualizations:
 - `experiment_results/formula_visualizations/`: tracked formula figures referenced by the paper.
 - `journals/README.md`: citation list for locally stored reference PDFs.
 
-## Paper Figure Assets
+## Paper Figure And Verification Assets
 
 The paper references individual graph files rather than a single merged overview image. Scenario-specific comparison figures are stored under:
 
@@ -65,6 +65,14 @@ The paper references individual graph files rather than a single merged overview
 - `experiment_results/comparisons/user_80_ep_400_edge_3/`
 
 Each scenario folder includes `comparison_finals.png` for final 10% mean metrics and `comparison_timeseries_smoothed.png` for episode-based learning curves.
+
+The comparison artifact index is available at:
+
+- [experiment_results/comparisons/README.md](./experiment_results/comparisons/README.md)
+
+The runtime summary used by the manuscript discussion is available at:
+
+- [experiment_results/comparisons/runtime_summary.csv](./experiment_results/comparisons/runtime_summary.csv)
 
 ## Upstream Baseline Repositories
 
