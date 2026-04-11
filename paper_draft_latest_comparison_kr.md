@@ -55,7 +55,7 @@ $$
 \mathcal{U}=\{1,2,\ldots,N\},\quad \mathcal{E}=\{1,2,\ldots,M\}
 $$
 
-여기서 \(N\)은 사용자 수, \(M\)은 edge node 수이다. 시간대별 기본 task 발생 profile을 다음과 같이 둔다.
+여기서 $N$은 사용자 수, $M$은 edge node 수이다. 시간대별 기본 task 발생 profile을 다음과 같이 둔다.
 
 $$
 \mathbf{b}=(b_1,b_2,\ldots,b_K),\quad 0\le b_k\le 1
@@ -67,14 +67,14 @@ $$
 a_u\in[a_{\min},a_{\max}],\quad u\in\mathcal{U}
 $$
 
-따라서 사용자 \(u\)가 시간 구간 \(t\)에서 task를 발생시킬 확률은 다음과 같이 정의한다.
+따라서 사용자 $u$가 시간 구간 $t$에서 task를 발생시킬 확률은 다음과 같이 정의한다.
 
 $$
 p_{arrive}(u,t)
 =\min\left(1,\max\left(0,b_{\kappa(t)}a_u\right)\right)
 $$
 
-여기서 \(\kappa(t)\in\{1,\ldots,K\}\)는 episode 내부 시간 \(t\)가 속한 base profile index이다. 본 실험에서는 \(\mathbf{b}=(0.18,0.30,0.42,0.24)\), \(a_{\min}=0.7\), \(a_{\max}=1.3\)을 사용하였다. 현재 profile 범위에서는 \(b_{\kappa(t)}a_u\le 0.546\)이므로 clipping은 안전장치로만 작동한다.
+여기서 $\kappa(t)\in\{1,\ldots,K\}$는 episode 내부 시간 $t$가 속한 base profile index이다. 본 실험에서는 $\mathbf{b}=(0.18,0.30,0.42,0.24)$, $a_{\min}=0.7$, $a_{\max}=1.3$을 사용하였다. 현재 profile 범위에서는 $b_{\kappa(t)}a_u\le 0.546$이므로 clipping은 안전장치로만 작동한다.
 
 ### 3.2 Effective load
 $$
@@ -85,7 +85,7 @@ $$
 \bar{a}=\frac{1}{N}\sum_{u=1}^{N}a_u
 $$
 
-본 구현에서는 사용자 활동성을 \(a_{\min}\)부터 \(a_{\max}\)까지 균등하게 배치하므로 다음과 같이 근사된다.
+본 구현에서는 사용자 활동성을 $a_{\min}$부터 $a_{\max}$까지 균등하게 배치하므로 다음과 같이 근사된다.
 
 $$
 \bar{a}=\frac{a_{\min}+a_{\max}}{2}
@@ -97,14 +97,14 @@ $$
 L_{eff}=\frac{N\bar{b}\bar{a}}{M}
 $$
 
-즉 사용자 수 \(N\)이 증가하면 부하는 증가하고, edge 수 \(M\)이 증가하면 edge당 부하는 감소한다. 본 실험의 기본 profile에서는 \(\bar{b}=0.285\), \(\bar{a}=1.0\)이다.
+즉 사용자 수 $N$이 증가하면 부하는 증가하고, edge 수 $M$이 증가하면 edge당 부하는 감소한다. 본 실험의 기본 profile에서는 $\bar{b}=0.285$, $\bar{a}=1.0$이다.
 
 ### 3.3 Adaptive gating
 $$
 c=M\lambda
 $$
 
-여기서 \(\lambda\)는 edge당 부하 스케일 상수이며, 본 실험에서는 \(\lambda=10\)을 사용한다. Adaptive gating strength는 다음과 같이 정의한다.
+여기서 $\lambda$는 edge당 부하 스케일 상수이며, 본 실험에서는 $\lambda=10$을 사용한다. Adaptive gating strength는 다음과 같이 정의한다.
 
 $$
 g(L_{eff})
@@ -112,23 +112,23 @@ g(L_{eff})
 =\frac{L_{eff}}{L_{eff}+M\lambda}
 $$
 
-이때 \(g(L_{\mathrm{eff}})\in[0,1)\)이며, \(L_{\mathrm{eff}}\)가 커질수록 \(g\)는 단조 증가한다.
+이때 $g(L_{\mathrm{eff}})\in[0,1)$이며, $L_{\mathrm{eff}}$가 커질수록 $g$는 단조 증가한다.
 
 $$
 \frac{\partial g}{\partial L_{eff}}
 =\frac{M\lambda}{(L_{eff}+M\lambda)^2}>0
 $$
 
-또한 \(M\lambda\)가 커질수록 같은 부하에서 \(g\)의 증가가 완만해진다. 이는 edge 수가 많거나 스케일 상수가 클수록 보수화 계수가 덜 민감하게 증가하도록 설계된 것이다.
+또한 $M\lambda$가 커질수록 같은 부하에서 $g$의 증가가 완만해진다. 이는 edge 수가 많거나 스케일 상수가 클수록 보수화 계수가 덜 민감하게 증가하도록 설계된 것이다.
 
 ### 3.4 Adaptive energy weight
 $$
 w_E = w_0\left(1+g(L_{eff})\right)^{\rho}
 $$
 
-여기서 \(w_E\)는 QECO-ADAPT reward에서 사용하는 adaptive energy weight, \(w_0\)는 기본 energy weight, \(\rho\)는 증가 곡률을 조절하는 exponent이다. 본 실험에서는 \(w_0=1.20\), \(\rho=0.35\)를 사용하였다.
+여기서 $w_E$는 QECO-ADAPT reward에서 사용하는 adaptive energy weight, $w_0$는 기본 energy weight, $\rho$는 증가 곡률을 조절하는 exponent이다. 본 실험에서는 $w_0=1.20$, $\rho=0.35$를 사용하였다.
 
-따라서 task \(i\)의 에너지 비용 항은 기존 QECO의 scaled energy에 \(w_E\)를 곱해 다음처럼 강화된다.
+따라서 task $i$의 에너지 비용 항은 기존 QECO의 scaled energy에 $w_E$를 곱해 다음처럼 강화된다.
 
 $$
 E^{scaled}_i
@@ -148,7 +148,7 @@ r_i^{adapt}=
 \end{cases}
 $$
 
-여기서 \(s_i\)는 사용자 단말의 energy state, \(D_i\)는 task delay, \(D_{\max}\)는 최대 허용 delay이다. 위 정의를 하나의 수식 도식으로 정리하면 다음과 같다.
+여기서 $s_i$는 사용자 단말의 energy state, $D_i$는 task delay, $D_{\max}$는 최대 허용 delay이다. 위 정의를 하나의 수식 도식으로 정리하면 다음과 같다.
 
 ![QECO-ADAPT mathematical definitions](./experiment_results/formula_visualizations/qeco_adapt_math_definitions.png)
 
@@ -161,13 +161,13 @@ $$
 **그림 3. QECO-ADAPT의 사용자 수 기반 adaptive gating strength와 adaptive energy weight 변화.**
 
 ### 3.5 상수 설정 근거
-본 연구에서 사용한 \(\mathbf{b}=(0.18,0.30,0.42,0.24)\), \(a_{\min}=0.7\), \(a_{\max}=1.3\), \(\lambda=10\), \(w_0=1.20\), \(\rho=0.35\)는 닫힌형 최적해에서 직접 도출된 값이 아니라, 공통 MEC 실험환경에서 QECO의 QoE 안정성을 크게 해치지 않으면서 부하 증가에 따른 energy-aware behavior를 유도하기 위한 calibration parameter이다.
+본 연구에서 사용한 $\mathbf{b}=(0.18,0.30,0.42,0.24)$, $a_{\min}=0.7$, $a_{\max}=1.3$, $\lambda=10$, $w_0=1.20$, $\rho=0.35$는 닫힌형 최적해에서 직접 도출된 값이 아니라, 공통 MEC 실험환경에서 QECO의 QoE 안정성을 크게 해치지 않으면서 부하 증가에 따른 energy-aware behavior를 유도하기 위한 calibration parameter이다.
 
-먼저 \(\mathbf{b}\)는 시간대별 task arrival profile을 나타낸다. 기존 공통 환경의 기본 task arrival probability가 0.3이었으므로, profile 평균이 이에 가깝도록 \(\bar{b}=0.285\)가 되게 설정하였다. 즉 전체 평균 부하는 기존 QECO 실험조건과 크게 다르지 않게 유지하면서, episode 내부에서는 저활동 구간, 일반 구간, peak 구간, 완화 구간이 나타나도록 한 것이다. \(a_{\min}=0.7\), \(a_{\max}=1.3\)은 사용자별 활동성 차이를 표현하되, 평균 활동성 \(\bar{a}=(a_{\min}+a_{\max})/2=1.0\)이 되도록 하여 전체 평균 arrival scale을 임의로 키우지 않도록 설계하였다.
+먼저 $\mathbf{b}$는 시간대별 task arrival profile을 나타낸다. 기존 공통 환경의 기본 task arrival probability가 0.3이었으므로, profile 평균이 이에 가깝도록 $\bar{b}=0.285$가 되게 설정하였다. 즉 전체 평균 부하는 기존 QECO 실험조건과 크게 다르지 않게 유지하면서, episode 내부에서는 저활동 구간, 일반 구간, peak 구간, 완화 구간이 나타나도록 한 것이다. $a_{\min}=0.7$, $a_{\max}=1.3$은 사용자별 활동성 차이를 표현하되, 평균 활동성 $\bar{a}=(a_{\min}+a_{\max})/2=1.0$이 되도록 하여 전체 평균 arrival scale을 임의로 키우지 않도록 설계하였다.
 
-\(\lambda=10\)은 전체 scale constant가 아니라 edge당 부하 스케일 상수이다. 실제 gating denominator에 들어가는 값은 \(c=M\lambda\)이므로 edge 수 \(M\)에 비례한다. 따라서 edge 수가 증가하면 \(L_{\mathrm{eff}}=N\bar{b}\bar{a}/M\)는 감소하고, 동시에 \(c=M\lambda\)는 증가한다. 이 두 효과 때문에 edge 자원이 충분한 환경에서는 gating이 과도하게 커지지 않는다. 예를 들어 \(N=30\)일 때 \(M=1\)이면 \(L_{\mathrm{eff}}=8.55\), \(c=10\), \(g=0.461\)이지만, \(M=3\)이면 \(L_{\mathrm{eff}}=2.85\), \(c=30\), \(g=0.087\)로 완화된다. 이는 edge capacity가 늘어난 상황에서 불필요하게 오프로딩을 보수화하지 않기 위한 구조이다.
+$\lambda=10$은 전체 scale constant가 아니라 edge당 부하 스케일 상수이다. 실제 gating denominator에 들어가는 값은 $c=M\lambda$이므로 edge 수 $M$에 비례한다. 따라서 edge 수가 증가하면 $L_{\mathrm{eff}}=N\bar{b}\bar{a}/M$는 감소하고, 동시에 $c=M\lambda$는 증가한다. 이 두 효과 때문에 edge 자원이 충분한 환경에서는 gating이 과도하게 커지지 않는다. 예를 들어 $N=30$일 때 $M=1$이면 $L_{\mathrm{eff}}=8.55$, $c=10$, $g=0.461$이지만, $M=3$이면 $L_{\mathrm{eff}}=2.85$, $c=30$, $g=0.087$로 완화된다. 이는 edge capacity가 늘어난 상황에서 불필요하게 오프로딩을 보수화하지 않기 위한 구조이다.
 
-마지막으로 \(w_0=1.20\)은 QECO 대비 energy term을 기본적으로 약간 더 민감하게 보기 위한 기준 weight이며, \(\rho=0.35\)는 부하 증가에 따른 energy penalty 증가를 sublinear하게 만드는 exponent이다. \(\rho<1\)로 두면 user 수가 증가하더라도 energy weight가 급격히 폭증하지 않으므로, energy saving을 유도하면서도 QoE와 Drop이 급격히 악화되는 것을 완화할 수 있다. 이러한 상수 설정의 역할은 그림 4에 요약하였다.
+마지막으로 $w_0=1.20$은 QECO 대비 energy term을 기본적으로 약간 더 민감하게 보기 위한 기준 weight이며, $\rho=0.35$는 부하 증가에 따른 energy penalty 증가를 sublinear하게 만드는 exponent이다. $\rho<1$로 두면 user 수가 증가하더라도 energy weight가 급격히 폭증하지 않으므로, energy saving을 유도하면서도 QoE와 Drop이 급격히 악화되는 것을 완화할 수 있다. 이러한 상수 설정의 역할은 그림 4에 요약하였다.
 
 ![QECO-ADAPT constant calibration](./experiment_results/formula_visualizations/qeco_adapt_constant_calibration.png)
 
