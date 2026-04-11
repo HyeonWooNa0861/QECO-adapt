@@ -8,19 +8,20 @@ The comparison artifacts are tracked for three reasons.
 
 - `comparison_finals.csv` and `comparison_finals.json` provide the final 10% episode-window values used in the manuscript tables.
 - `comparison_finals.png` and `comparison_timeseries_smoothed.png` provide the scenario-level figures rendered in the manuscript.
+- `comparison_averages.png` provides a supplementary full-episode average view for checking whether the final-window interpretation is consistent with the broader learning trajectory.
 - `comparison_runtime.png` and `runtime_summary.csv` provide runtime evidence for the runtime discussion and the CD exclusion argument.
 
 ## Main Scenario Artifacts
 
-| Scenario | Setting | Final CSV | Final Figure | Smoothed Time-Series | Runtime Figure | Summary JSON |
-| --- | --- | --- | --- | --- | --- | --- |
-| S1 | users=10, edges=1 | [CSV](./user_10_ep_400_edge_1/comparison_finals.csv) | [Final](./user_10_ep_400_edge_1/comparison_finals.png) | [Time-series](./user_10_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_10_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_10_ep_400_edge_1/comparison_summary.json) |
-| S2 | users=30, edges=1 | [CSV](./user_30_ep_400_edge_1/comparison_finals.csv) | [Final](./user_30_ep_400_edge_1/comparison_finals.png) | [Time-series](./user_30_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_30_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_30_ep_400_edge_1/comparison_summary.json) |
-| S3 | users=30, edges=3 | [CSV](./user_30_ep_400_edge_3/comparison_finals.csv) | [Final](./user_30_ep_400_edge_3/comparison_finals.png) | [Time-series](./user_30_ep_400_edge_3/comparison_timeseries_smoothed.png) | [Runtime](./user_30_ep_400_edge_3/comparison_runtime.png) | [JSON](./user_30_ep_400_edge_3/comparison_summary.json) |
-| S4 | users=50, edges=1 | [CSV](./user_50_ep_400_edge_1/comparison_finals.csv) | [Final](./user_50_ep_400_edge_1/comparison_finals.png) | [Time-series](./user_50_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_50_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_50_ep_400_edge_1/comparison_summary.json) |
-| S5 | users=50, edges=10 | [CSV](./user_50_ep_400_edge_10/comparison_finals.csv) | [Final](./user_50_ep_400_edge_10/comparison_finals.png) | [Time-series](./user_50_ep_400_edge_10/comparison_timeseries_smoothed.png) | [Runtime](./user_50_ep_400_edge_10/comparison_runtime.png) | [JSON](./user_50_ep_400_edge_10/comparison_summary.json) |
-| S6 | users=80, edges=1 | [CSV](./user_80_ep_400_edge_1/comparison_finals.csv) | [Final](./user_80_ep_400_edge_1/comparison_finals.png) | [Time-series](./user_80_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_80_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_80_ep_400_edge_1/comparison_summary.json) |
-| S7 | users=80, edges=3 | [CSV](./user_80_ep_400_edge_3/comparison_finals.csv) | [Final](./user_80_ep_400_edge_3/comparison_finals.png) | [Time-series](./user_80_ep_400_edge_3/comparison_timeseries_smoothed.png) | [Runtime](./user_80_ep_400_edge_3/comparison_runtime.png) | [JSON](./user_80_ep_400_edge_3/comparison_summary.json) |
+| Scenario | Setting | Final CSV | Final Figure | Average Figure | Smoothed Time-Series | Runtime Figure | Summary JSON |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| S1 | users=10, edges=1 | [CSV](./user_10_ep_400_edge_1/comparison_finals.csv) | [Final](./user_10_ep_400_edge_1/comparison_finals.png) | [Average](./user_10_ep_400_edge_1/comparison_averages.png) | [Time-series](./user_10_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_10_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_10_ep_400_edge_1/comparison_summary.json) |
+| S2 | users=30, edges=1 | [CSV](./user_30_ep_400_edge_1/comparison_finals.csv) | [Final](./user_30_ep_400_edge_1/comparison_finals.png) | [Average](./user_30_ep_400_edge_1/comparison_averages.png) | [Time-series](./user_30_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_30_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_30_ep_400_edge_1/comparison_summary.json) |
+| S3 | users=30, edges=3 | [CSV](./user_30_ep_400_edge_3/comparison_finals.csv) | [Final](./user_30_ep_400_edge_3/comparison_finals.png) | [Average](./user_30_ep_400_edge_3/comparison_averages.png) | [Time-series](./user_30_ep_400_edge_3/comparison_timeseries_smoothed.png) | [Runtime](./user_30_ep_400_edge_3/comparison_runtime.png) | [JSON](./user_30_ep_400_edge_3/comparison_summary.json) |
+| S4 | users=50, edges=1 | [CSV](./user_50_ep_400_edge_1/comparison_finals.csv) | [Final](./user_50_ep_400_edge_1/comparison_finals.png) | [Average](./user_50_ep_400_edge_1/comparison_averages.png) | [Time-series](./user_50_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_50_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_50_ep_400_edge_1/comparison_summary.json) |
+| S5 | users=50, edges=10 | [CSV](./user_50_ep_400_edge_10/comparison_finals.csv) | [Final](./user_50_ep_400_edge_10/comparison_finals.png) | [Average](./user_50_ep_400_edge_10/comparison_averages.png) | [Time-series](./user_50_ep_400_edge_10/comparison_timeseries_smoothed.png) | [Runtime](./user_50_ep_400_edge_10/comparison_runtime.png) | [JSON](./user_50_ep_400_edge_10/comparison_summary.json) |
+| S6 | users=80, edges=1 | [CSV](./user_80_ep_400_edge_1/comparison_finals.csv) | [Final](./user_80_ep_400_edge_1/comparison_finals.png) | [Average](./user_80_ep_400_edge_1/comparison_averages.png) | [Time-series](./user_80_ep_400_edge_1/comparison_timeseries_smoothed.png) | [Runtime](./user_80_ep_400_edge_1/comparison_runtime.png) | [JSON](./user_80_ep_400_edge_1/comparison_summary.json) |
+| S7 | users=80, edges=3 | [CSV](./user_80_ep_400_edge_3/comparison_finals.csv) | [Final](./user_80_ep_400_edge_3/comparison_finals.png) | [Average](./user_80_ep_400_edge_3/comparison_averages.png) | [Time-series](./user_80_ep_400_edge_3/comparison_timeseries_smoothed.png) | [Runtime](./user_80_ep_400_edge_3/comparison_runtime.png) | [JSON](./user_80_ep_400_edge_3/comparison_summary.json) |
 
 ## Runtime Summary
 
@@ -42,4 +43,4 @@ The folder [user_10_ep_400_edge_1__cd-qeco-qeco-adapt](./user_10_ep_400_edge_1__
 
 ## Supplementary But Not Main-Text Figures
 
-The files `comparison_averages.png` and `comparison_timeseries.png` are retained as supplementary audit plots. The manuscript itself uses `comparison_finals.png`, `comparison_timeseries_smoothed.png`, the CSV/JSON summaries, and the runtime evidence.
+The files `comparison_averages.png` are linked above as supplementary audit plots. The manuscript itself uses final-window values as the main reported result because they better represent the stable end-of-training region. The unsmoothed `comparison_timeseries.png` files are retained only as additional audit plots; the manuscript uses the smoothed versions for readability.
