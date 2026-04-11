@@ -1,0 +1,5 @@
+algorithm,label,qoe_final,delay_final,energy_final,drop_final,runtime_trimmed_median
+droo,DROO,23.982692,6.289237,10.294568,40.450000,1.432225
+qeco,QECO,27.377055,5.700747,12.735306,17.250000,1.569878
+qeco_adapt,QECO-ADAPT,25.587525,6.027848,11.773079,28.200000,1.649510
+twdqn,Tang&Wong DQN,27.378698,5.723517,12.535141,17.350000,1.526410

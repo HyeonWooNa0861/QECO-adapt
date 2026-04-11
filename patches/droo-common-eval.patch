@@ -1,0 +1,315 @@
+diff --git a/mainPyTorch.py b/mainPyTorch.py
+index 7eca9f4..988750b 100644
+--- a/mainPyTorch.py
++++ b/mainPyTorch.py
+@@ -28,15 +28,29 @@
+ 
+ import scipy.io as sio                     # import scipy.io for .mat file I/
+ import numpy as np                         # import numpy
++import json
++import sys
++from pathlib import Path
++
++PARENT_DIR = Path(__file__).resolve().parent.parent
++if str(PARENT_DIR) not in sys.path:
++    sys.path.insert(0, str(PARENT_DIR))
+ 
+ # Implementated based on the PyTorch 
+ from memoryPyTorch import MemoryDNN
+ from optimization import bisection
++from common_experiment import (
++    SharedExperiment,
++    apply_global_seed,
++    create_run_dir,
++    resample_series,
++    write_experiment_snapshot,
++)
+ 
+ import time
+ 
+ 
+-def plot_rate(rate_his, rolling_intv=50):
++def plot_rate(rate_his, output_path, rolling_intv=50):
+     import matplotlib.pyplot as plt
+     import pandas as pd
+     import matplotlib as mpl
+@@ -45,7 +59,10 @@ def plot_rate(rate_his, rolling_intv=50):
+     df = pd.DataFrame(rate_his)
+ 
+ 
+-    mpl.style.use('seaborn')
++    if 'seaborn-v0_8' in mpl.style.available:
++        mpl.style.use('seaborn-v0_8')
++    elif 'seaborn' in mpl.style.available:
++        mpl.style.use('seaborn')
+     fig, ax = plt.subplots(figsize=(15, 8))
+ #    rolling_intv = 20
+ 
+@@ -53,13 +70,70 @@ def plot_rate(rate_his, rolling_intv=50):
+     plt.fill_between(np.arange(len(rate_array))+1, np.hstack(df.rolling(rolling_intv, min_periods=1).min()[0].values), np.hstack(df.rolling(rolling_intv, min_periods=1).max()[0].values), color = 'b', alpha = 0.2)
+     plt.ylabel('Normalized Computation Rate')
+     plt.xlabel('Time Frames')
+-    plt.show()
++    fig.savefig(output_path, bbox_inches='tight')
++    plt.close(fig)
++
++
++def plot_qeco_compatible_metrics(qoe_his, delay_his, energy_his, drop_his, output_path):
++    import matplotlib.pyplot as plt
++
++    fig, axs = plt.subplots(4, 1, figsize=(10, 20))
++    fig.suptitle('DROO Metrics In QECO-Compatible Layout', fontsize=16, y=0.92)
++
++    axs[0].plot(qoe_his, marker='o', linestyle='-', color='b', label='Normalized Rate Proxy')
++    axs[0].set_ylabel('QoE Proxy')
++    axs[0].set_xlabel('Frame')
++    axs[0].grid(True, linestyle='--', alpha=0.7)
++    axs[0].legend()
++
++    axs[1].plot(delay_his, marker='s', linestyle='-', color='g', label='Offloading Time Proxy')
++    axs[1].set_ylabel('Delay Proxy')
++    axs[1].set_xlabel('Frame')
++    axs[1].grid(True, linestyle='--', alpha=0.7)
++    axs[1].legend()
++
++    axs[2].plot(energy_his, marker='^', linestyle='-', color='r', label='Energy Broadcast Proxy')
++    axs[2].set_ylabel('Energy Proxy')
++    axs[2].set_xlabel('Frame')
++    axs[2].grid(True, linestyle='--', alpha=0.7)
++    axs[2].legend()
++
++    axs[3].plot(drop_his, marker='x', linestyle='-', color='m', label='Drop Count Proxy')
++    axs[3].set_ylabel('Drop Proxy')
++    axs[3].set_xlabel('Frame')
++    axs[3].grid(True, linestyle='--', alpha=0.7)
++    axs[3].legend()
++
++    plt.tight_layout()
++    plt.subplots_adjust(top=0.9)
++    fig.savefig(output_path, dpi=100, bbox_inches='tight')
++    plt.close(fig)
++
+ 
+ def save_to_txt(rate_his, file_path):
+     with open(file_path, 'w') as f:
+         for rate in rate_his:
+             f.write("%s \n" % rate)
+ 
++
++def save_history_csv(rows, file_path):
++    headers = [
++        "frame",
++        "objective",
++        "normalized_rate",
++        "energy_broadcast_ratio",
++        "offloading_time_sum",
++        "offloading_user_count",
++        "selected_k_index",
++        "adaptive_k",
++    ]
++    with open(file_path, 'w') as f:
++        f.write(",".join(headers) + "\n")
++        for row in rows:
++            values = [str(row[key]) for key in headers]
++            f.write(",".join(values) + "\n")
++
++
+ if __name__ == "__main__":
+     '''
+         This algorithm generates K modes from DNN, and chooses with largest
+@@ -68,14 +142,31 @@ if __name__ == "__main__":
+         Adaptive K is implemented. K = max(K, K_his[-memory_size])
+     '''
+ 
+-    N = 10                       # number of users
+-    n = 30000                    # number of time frames
++    apply_global_seed(SharedExperiment.RANDOM_SEED, use_torch=True)
++
++    N = SharedExperiment.NUM_USERS
++    n = SharedExperiment.DROO_CHANNEL_FRAMES
+     K = N                        # initialize K = N
+-    decoder_mode = 'OP'          # the quantization mode could be 'OP' (Order-preserving) or 'KNN'
+-    Memory = 1024                # capacity of memory structure
+-    Delta = 32                   # Update interval for adaptive K
++    decoder_mode = SharedExperiment.DROO_DECODER_MODE
++    Memory = SharedExperiment.DROO_MEMORY_SIZE
++    Delta = SharedExperiment.DROO_DELTA
++    result_dir = create_run_dir("droo")
++    qeco_dir = result_dir / "qeco_compatible"
++    comparison_dir = result_dir / "comparison_ready"
++    result_dir.mkdir(parents=True, exist_ok=True)
++    qeco_dir.mkdir(parents=True, exist_ok=True)
++    comparison_dir.mkdir(parents=True, exist_ok=True)
++    write_experiment_snapshot(
++        result_dir,
++        extra={
++            "algorithm": "DROO",
++            "decoder_mode": decoder_mode,
++            "data_file": f"data_{N}.mat",
++        },
++    )
+ 
+     print('#user = %d, #channel=%d, K=%d, decoder = %s, Memory = %d, Delta = %d'%(N,n,K,decoder_mode, Memory, Delta))
++    print('Results directory:', result_dir.resolve())
+     # Load data
+     channel = sio.loadmat('./data/data_%d' %N)['input_h']
+     rate = sio.loadmat('./data/data_%d' %N)['output_obj'] # this rate is only used to plot figures; never used to train DROO.
+@@ -105,6 +196,11 @@ if __name__ == "__main__":
+     mode_his = []
+     k_idx_his = []
+     K_his = []
++    a_his = []
++    tau_sum_his = []
++    offload_count_his = []
++    drop_proxy_his = []
++    history_rows = []
+     for i in range(n):
+         if i % (n//10) == 0:
+            print("%0.1f"%(i/n))
+@@ -129,11 +225,16 @@ if __name__ == "__main__":
+         m_list = mem.decode(h, K, decoder_mode)
+ 
+         r_list = []
++        decision_meta = []
+         for m in m_list:
+-            r_list.append(bisection(h/1000000, m)[0])
++            objective, energy_broadcast_ratio, tau_list = bisection(h/1000000, m)
++            r_list.append(objective)
++            decision_meta.append((energy_broadcast_ratio, tau_list))
+ 
+         # encode the mode with largest reward
+-        mem.encode(h, m_list[np.argmax(r_list)])
++        best_idx = np.argmax(r_list)
++        best_a, best_tau = decision_meta[best_idx]
++        mem.encode(h, m_list[best_idx])
+         # the main code for DROO training ends here
+ 
+ 
+@@ -144,23 +245,96 @@ if __name__ == "__main__":
+         rate_his.append(np.max(r_list))
+         rate_his_ratio.append(rate_his[-1] / rate[i_idx][0])
+         # record the index of largest reward
+-        k_idx_his.append(np.argmax(r_list))
++        k_idx_his.append(best_idx)
+         # record K in case of adaptive K
+         K_his.append(K)
+-        mode_his.append(m_list[np.argmax(r_list)])
++        mode_his.append(m_list[best_idx])
++        a_his.append(best_a)
++        tau_sum_his.append(float(np.sum(best_tau)) if len(best_tau) else 0.0)
++        offload_count_his.append(int(np.sum(m_list[best_idx])))
++        drop_proxy_his.append(0)
++        history_rows.append({
++            "frame": i + 1,
++            "objective": rate_his[-1],
++            "normalized_rate": rate_his_ratio[-1],
++            "energy_broadcast_ratio": a_his[-1],
++            "offloading_time_sum": tau_sum_his[-1],
++            "offloading_user_count": offload_count_his[-1],
++            "selected_k_index": k_idx_his[-1],
++            "adaptive_k": K_his[-1],
++        })
+ 
+ 
+     total_time=time.time()-start_time
+-    mem.plot_cost()
+-    plot_rate(rate_his_ratio)
++    mem.plot_cost(result_dir / "training_loss.png")
++    plot_rate(rate_his_ratio, result_dir / "rate_history.png")
++    plot_qeco_compatible_metrics(
++        qoe_his=rate_his_ratio,
++        delay_his=tau_sum_his,
++        energy_his=a_his,
++        drop_his=drop_proxy_his,
++        output_path=qeco_dir / "Performance_Chart.png",
++    )
+ 
+     print("Averaged normalized computation rate:", sum(rate_his_ratio[-num_test: -1])/num_test)
+     print('Total time consumed:%s'%total_time)
+     print('Average time per channel:%s'%(total_time/n))
+ 
+     # save data into txt
+-    save_to_txt(k_idx_his, "k_idx_his.txt")
+-    save_to_txt(K_his, "K_his.txt")
+-    save_to_txt(mem.cost_his, "cost_his.txt")
+-    save_to_txt(rate_his_ratio, "rate_his_ratio.txt")
+-    save_to_txt(mode_his, "mode_his.txt")
++    save_to_txt(k_idx_his, result_dir / "k_idx_his.txt")
++    save_to_txt(K_his, result_dir / "K_his.txt")
++    save_to_txt(mem.cost_his, result_dir / "cost_his.txt")
++    save_to_txt(rate_his_ratio, result_dir / "rate_his_ratio.txt")
++    save_to_txt(mode_his, result_dir / "mode_his.txt")
++    save_history_csv(history_rows, result_dir / "history.csv")
++
++    save_to_txt(rate_his_ratio, qeco_dir / "QoE.txt")
++    save_to_txt(tau_sum_his, qeco_dir / "Delay.txt")
++    save_to_txt(a_his, qeco_dir / "Energy.txt")
++    save_to_txt(drop_proxy_his, qeco_dir / "Drop.txt")
++    save_to_txt(np.arange(1, n + 1), qeco_dir / "Episode.txt")
++
++    comparison_qoe = resample_series(rate_his_ratio, SharedExperiment.COMPARISON_POINTS)
++    comparison_delay = resample_series(tau_sum_his, SharedExperiment.COMPARISON_POINTS)
++    comparison_energy = resample_series(a_his, SharedExperiment.COMPARISON_POINTS)
++    comparison_drop = resample_series(drop_proxy_his, SharedExperiment.COMPARISON_POINTS)
++
++    save_to_txt(comparison_qoe, comparison_dir / "QoE.txt")
++    save_to_txt(comparison_delay, comparison_dir / "Delay.txt")
++    save_to_txt(comparison_energy, comparison_dir / "Energy.txt")
++    save_to_txt(comparison_drop, comparison_dir / "Drop.txt")
++    save_to_txt(np.arange(1, SharedExperiment.COMPARISON_POINTS + 1), comparison_dir / "ComparisonStep.txt")
++    plot_qeco_compatible_metrics(
++        qoe_his=comparison_qoe,
++        delay_his=comparison_delay,
++        energy_his=comparison_energy,
++        drop_his=comparison_drop,
++        output_path=comparison_dir / "Performance_Chart.png",
++    )
++
++    metadata = {
++        "algorithm": "DROO",
++        "result_dir": str(result_dir.resolve()),
++        "compatible_layout": "QECO",
++        "metric_mapping": {
++            "QoE.txt": "Normalized computation rate proxy",
++            "Delay.txt": "Sum of offloading time fractions proxy",
++            "Energy.txt": "Energy broadcasting ratio proxy",
++            "Drop.txt": "Drop proxy fixed at 0 because DROO baseline does not model QECO drop events",
++        },
++        "comparison_ready": {
++            "points": SharedExperiment.COMPARISON_POINTS,
++            "aggregation": "mean binning from channel frames to common comparison steps",
++        },
++        "legacy_outputs_preserved": [
++            "training_loss.png",
++            "rate_history.png",
++            "k_idx_his.txt",
++            "K_his.txt",
++            "cost_his.txt",
++            "rate_his_ratio.txt",
++            "mode_his.txt",
++        ],
++    }
++    with open(qeco_dir / "metadata.json", "w") as f:
++        json.dump(metadata, f, indent=2)
+diff --git a/memoryPyTorch.py b/memoryPyTorch.py
+index d920cc2..d4cec72 100644
+--- a/memoryPyTorch.py
++++ b/memoryPyTorch.py
+@@ -146,10 +146,11 @@ class MemoryDNN:
+         return self.enumerate_actions[idx[:k]]
+ 
+ 
+-    def plot_cost(self):
++    def plot_cost(self, output_path='training_loss.png'):
+         import matplotlib.pyplot as plt
+-        plt.plot(np.arange(len(self.cost_his))*self.training_interval, self.cost_his)
+-        plt.ylabel('Training Loss')
+-        plt.xlabel('Time Frames')
+-        plt.show()
+-
++        fig, ax = plt.subplots()
++        ax.plot(np.arange(len(self.cost_his))*self.training_interval, self.cost_his)
++        ax.set_ylabel('Training Loss')
++        ax.set_xlabel('Time Frames')
++        fig.savefig(output_path, bbox_inches='tight')
++        plt.close(fig)

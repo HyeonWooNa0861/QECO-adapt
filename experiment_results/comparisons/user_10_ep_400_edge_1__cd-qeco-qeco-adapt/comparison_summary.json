@@ -1,0 +1,147 @@
+{
+  "runs": {
+    "cd": "/home/wsl/Alpha_1/experiment_results/cd/run_20260410_163446",
+    "qeco": "/home/wsl/Alpha_1/experiment_results/qeco/run_20260410_184909",
+    "qeco_adapt": "/home/wsl/Alpha_1/experiment_results/qeco_adapt/run_20260410_185908"
+  },
+  "output_dir": "/home/wsl/Alpha_1/experiment_results/comparisons/user_10_ep_400_edge_1__cd-qeco-qeco-adapt",
+  "scenario_title": "user_10_ep_400_edge_1",
+  "scenario_profile": {
+    "num_users": 10,
+    "num_edges": 1,
+    "episodes": 400,
+    "max_delay": 10
+  },
+  "algorithms": [
+    "cd",
+    "qeco",
+    "qeco_adapt"
+  ],
+  "episode_points": 400,
+  "finals_source": {
+    "series": "raw episode QoE/Delay/Energy/Drop files in each run directory",
+    "window_ratio": 0.1,
+    "note": "Time-series, averages, and finals use raw episode series when available; compatibility output is used only as a fallback."
+  },
+  "metrics": {
+    "qoe": {
+      "cd": {
+        "mean": 21.9871110721405,
+        "final": 24.01240693606831
+      },
+      "qeco": {
+        "mean": 21.28212252636141,
+        "final": 26.28390856538049
+      },
+      "qeco_adapt": {
+        "mean": 21.451018447769226,
+        "final": 26.492035719332865
+      }
+    },
+    "delay": {
+      "cd": {
+        "mean": 6.552725175316163,
+        "final": 6.421985815602837
+      },
+      "qeco": {
+        "mean": 6.674453995608429,
+        "final": 5.683453237410072
+      },
+      "qeco_adapt": {
+        "mean": 6.655449827576361,
+        "final": 5.848920863309353
+      }
+    },
+    "energy": {
+      "cd": {
+        "mean": 9.997726331044598,
+        "final": 10.784389818578347
+      },
+      "qeco": {
+        "mean": 12.385900102952869,
+        "final": 12.259080381009465
+      },
+      "qeco_adapt": {
+        "mean": 12.30087006352557,
+        "final": 12.831095231578116
+      }
+    },
+    "drop": {
+      "cd": {
+        "mean": 51.25,
+        "final": 35.0
+      },
+      "qeco": {
+        "mean": 52.745,
+        "final": 24.0
+      },
+      "qeco_adapt": {
+        "mean": 51.8875,
+        "final": 22.0
+      }
+    }
+  },
+  "runtime": {
+    "cd": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 14.321758321952075,
+      "trimmed_mean": 14.375036391229878,
+      "trimmed_median": 14.321758321952075
+    },
+    "qeco": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 1.4272857200121507,
+      "trimmed_mean": 1.420881436169293,
+      "trimmed_median": 1.4272857200121507
+    },
+    "qeco_adapt": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 1.4348711845232174,
+      "trimmed_mean": 1.423182639951483,
+      "trimmed_median": 1.4348711845232174
+    }
+  },
+  "finals_only": {
+    "cd": {
+      "label": "CD",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 22.150901374650132,
+      "delay_final": 6.564664093124492,
+      "energy_final": 9.95703883505125,
+      "drop_final": 49.45,
+      "runtime_trimmed_median": 14.321758321952075
+    },
+    "qeco": {
+      "label": "QECO",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 25.276214585426516,
+      "delay_final": 6.064835000739592,
+      "energy_final": 12.1652182096081,
+      "drop_final": 29.25,
+      "runtime_trimmed_median": 1.4272857200121507
+    },
+    "qeco_adapt": {
+      "label": "QECO-ADAPT",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 25.53644665321336,
+      "delay_final": 6.056580579767037,
+      "energy_final": 12.324027898060606,
+      "drop_final": 27.6,
+      "runtime_trimmed_median": 1.4348711845232174
+    }
+  },
+  "visualization": {
+    "smoothing_method": "moving_average",
+    "smoothing_window": 25,
+    "smoothed_chart": "/home/wsl/Alpha_1/experiment_results/comparisons/user_10_ep_400_edge_1__cd-qeco-qeco-adapt/comparison_timeseries_smoothed.png"
+  }
+}

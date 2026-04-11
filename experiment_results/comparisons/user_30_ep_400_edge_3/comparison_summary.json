@@ -1,0 +1,183 @@
+{
+  "runs": {
+    "droo": "/home/wsl/Alpha_1/experiment_results/droo/run_20260409_022509",
+    "qeco": "/home/wsl/Alpha_1/experiment_results/qeco/run_20260409_030521",
+    "qeco_adapt": "/home/wsl/Alpha_1/experiment_results/qeco_adapt/run_20260409_033425",
+    "twdqn": "/home/wsl/Alpha_1/experiment_results/twdqn/run_20260409_040347"
+  },
+  "output_dir": "/home/wsl/Alpha_1/experiment_results/comparisons/user_30_ep_400_edge_3",
+  "scenario_title": "user_30_ep_400_edge_3",
+  "scenario_profile": {
+    "num_users": 30,
+    "num_edges": 3,
+    "episodes": 400,
+    "max_delay": 10
+  },
+  "algorithms": [
+    "droo",
+    "qeco",
+    "qeco_adapt",
+    "twdqn"
+  ],
+  "episode_points": 400,
+  "finals_source": {
+    "series": "raw episode QoE/Delay/Energy/Drop files in each run directory",
+    "window_ratio": 0.1,
+    "note": "Time-series, averages, and finals use raw episode series when available; compatibility output is used only as a fallback."
+  },
+  "metrics": {
+    "qoe": {
+      "droo": {
+        "mean": 12.619761113009705,
+        "final": 13.781368603341313
+      },
+      "qeco": {
+        "mean": 20.92377044777488,
+        "final": 24.53078752020076
+      },
+      "qeco_adapt": {
+        "mean": 20.94309831418865,
+        "final": 25.0740132081032
+      },
+      "twdqn": {
+        "mean": 21.048234040908795,
+        "final": 24.905745100679013
+      }
+    },
+    "delay": {
+      "droo": {
+        "mean": 7.97279381724476,
+        "final": 7.858608893956671
+      },
+      "qeco": {
+        "mean": 6.810844499139946,
+        "final": 6.3974799541809855
+      },
+      "qeco_adapt": {
+        "mean": 6.803180999379339,
+        "final": 6.224277456647399
+      },
+      "twdqn": {
+        "mean": 6.7897580510718045,
+        "final": 6.247422680412371
+      }
+    },
+    "energy": {
+      "droo": {
+        "mean": 9.61542687877981,
+        "final": 9.128750504666266
+      },
+      "qeco": {
+        "mean": 12.98545036120161,
+        "final": 13.219396153145805
+      },
+      "qeco_adapt": {
+        "mean": 12.988954155030587,
+        "final": 12.856427731876032
+      },
+      "twdqn": {
+        "mean": 12.98114572865356,
+        "final": 13.112442753081222
+      }
+    },
+    "drop": {
+      "droo": {
+        "mean": 354.235,
+        "final": 334.0
+      },
+      "qeco": {
+        "mean": 170.155,
+        "final": 99.0
+      },
+      "qeco_adapt": {
+        "mean": 169.8225,
+        "final": 92.0
+      },
+      "twdqn": {
+        "mean": 167.6775,
+        "final": 94.0
+      }
+    }
+  },
+  "runtime": {
+    "droo": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 3.5469843210012186,
+      "trimmed_mean": 4.647942725159737,
+      "trimmed_median": 3.5469843210012186
+    },
+    "qeco": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 3.940341817011358,
+      "trimmed_mean": 3.9236435446970064,
+      "trimmed_median": 3.940341817011358
+    },
+    "qeco_adapt": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 3.949003340007039,
+      "trimmed_mean": 3.9592802052044136,
+      "trimmed_median": 3.949003340007039
+    },
+    "twdqn": {
+      "count": 400,
+      "trim_ratio": 0.1,
+      "median": 3.826472496497445,
+      "trimmed_mean": 3.853699992754264,
+      "trimmed_median": 3.826472496497445
+    }
+  },
+  "finals_only": {
+    "droo": {
+      "label": "DROO",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 13.156413801560342,
+      "delay_final": 7.9045117556952835,
+      "energy_final": 8.625169459421274,
+      "drop_final": 343.6,
+      "runtime_trimmed_median": 3.5469843210012186
+    },
+    "qeco": {
+      "label": "QECO",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 24.969471897604645,
+      "delay_final": 6.2096045232835495,
+      "energy_final": 12.771435214132886,
+      "drop_final": 96.45,
+      "runtime_trimmed_median": 3.940341817011358
+    },
+    "qeco_adapt": {
+      "label": "QECO-ADAPT",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 25.1767610989695,
+      "delay_final": 6.1889556825373715,
+      "energy_final": 12.87844495137679,
+      "drop_final": 92.275,
+      "runtime_trimmed_median": 3.949003340007039
+    },
+    "twdqn": {
+      "label": "Tang&Wong DQN",
+      "final_source": "raw_episode_series",
+      "final_window_ratio": 0.1,
+      "final_window_count": 40,
+      "qoe_final": 25.366343656817104,
+      "delay_final": 6.160719203783092,
+      "energy_final": 12.883833674036305,
+      "drop_final": 88.75,
+      "runtime_trimmed_median": 3.826472496497445
+    }
+  },
+  "visualization": {
+    "smoothing_method": "moving_average",
+    "smoothing_window": 25,
+    "smoothed_chart": "/home/wsl/Alpha_1/experiment_results/comparisons/user_30_ep_400_edge_3/comparison_timeseries_smoothed.png"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "cd": {
+    "label": "CD",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 22.150901374650132,
+    "delay_final": 6.564664093124492,
+    "energy_final": 9.95703883505125,
+    "drop_final": 49.45,
+    "runtime_trimmed_median": 14.321758321952075
+  },
+  "qeco": {
+    "label": "QECO",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 25.276214585426516,
+    "delay_final": 6.064835000739592,
+    "energy_final": 12.1652182096081,
+    "drop_final": 29.25,
+    "runtime_trimmed_median": 1.4272857200121507
+  },
+  "qeco_adapt": {
+    "label": "QECO-ADAPT",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 25.53644665321336,
+    "delay_final": 6.056580579767037,
+    "energy_final": 12.324027898060606,
+    "drop_final": 27.6,
+    "runtime_trimmed_median": 1.4348711845232174
+  }
+}

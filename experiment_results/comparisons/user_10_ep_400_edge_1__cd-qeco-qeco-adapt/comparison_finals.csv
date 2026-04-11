@@ -1,0 +1,4 @@
+algorithm,label,qoe_final,delay_final,energy_final,drop_final,runtime_trimmed_median
+cd,CD,22.150901,6.564664,9.957039,49.450000,14.321758
+qeco,QECO,25.276215,6.064835,12.165218,29.250000,1.427286
+qeco_adapt,QECO-ADAPT,25.536447,6.056581,12.324028,27.600000,1.434871

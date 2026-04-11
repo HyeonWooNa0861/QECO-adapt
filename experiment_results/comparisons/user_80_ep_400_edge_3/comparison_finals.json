@@ -1,0 +1,46 @@
+{
+  "droo": {
+    "label": "DROO",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 9.418726264019485,
+    "delay_final": 8.381749319618086,
+    "energy_final": 6.441135119657669,
+    "drop_final": 1136.875,
+    "runtime_trimmed_median": 8.930727494996972
+  },
+  "qeco": {
+    "label": "QECO",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 17.461177215733727,
+    "delay_final": 7.410200406738262,
+    "energy_final": 17.540543681691346,
+    "drop_final": 662.5,
+    "runtime_trimmed_median": 9.68054818501696
+  },
+  "qeco_adapt": {
+    "label": "QECO-ADAPT",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 17.799230384713976,
+    "delay_final": 7.359543516869964,
+    "energy_final": 17.339908546459537,
+    "drop_final": 646.825,
+    "runtime_trimmed_median": 9.652817115013022
+  },
+  "twdqn": {
+    "label": "Tang&Wong DQN",
+    "final_source": "raw_episode_series",
+    "final_window_ratio": 0.1,
+    "final_window_count": 40,
+    "qoe_final": 18.006841404876173,
+    "delay_final": 7.315036369834489,
+    "energy_final": 16.774968361255546,
+    "drop_final": 640.3,
+    "runtime_trimmed_median": 9.50893852498848
+  }
+}
