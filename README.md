@@ -2,9 +2,11 @@
 
 This repository contains a shared mobile edge computing (MEC) evaluation setup for comparing DROO, QECO, QECO-ADAPT, and Tang&Wong-style DQN baselines.
 
-The main paper draft is:
+The main paper draft is rendered directly on GitHub:
 
-- `paper_draft_latest_comparison_kr.md`
+- [paper_draft_latest_comparison_kr.md](./paper_draft_latest_comparison_kr.md)
+
+The manuscript uses repository-relative image links, so formula figures and comparison graphs are visible directly in GitHub Markdown.
 
 ## Main Commands
 
@@ -49,6 +51,20 @@ Regenerate formula visualizations:
 - `experiment_results/comparisons/`: tracked comparison outputs used by the paper.
 - `experiment_results/formula_visualizations/`: tracked formula figures referenced by the paper.
 - `journals/README.md`: citation list for locally stored reference PDFs.
+
+## Paper Figure Assets
+
+The paper references individual graph files rather than a single merged overview image. Scenario-specific comparison figures are stored under:
+
+- `experiment_results/comparisons/user_10_ep_400_edge_1/`
+- `experiment_results/comparisons/user_30_ep_400_edge_1/`
+- `experiment_results/comparisons/user_30_ep_400_edge_3/`
+- `experiment_results/comparisons/user_50_ep_400_edge_1/`
+- `experiment_results/comparisons/user_50_ep_400_edge_10/`
+- `experiment_results/comparisons/user_80_ep_400_edge_1/`
+- `experiment_results/comparisons/user_80_ep_400_edge_3/`
+
+Each scenario folder includes `comparison_finals.png` for final 10% mean metrics and `comparison_timeseries_smoothed.png` for episode-based learning curves.
 
 ## Upstream Baseline Repositories
 
