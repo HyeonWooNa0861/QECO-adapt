@@ -52,7 +52,7 @@ QECO 원문은 성능 평가에서 50 MDs와 5 ENs를 사용하는 MEC 환경을
 \Delta X = X_{\mathrm{QECO\text{-}ADAPT}} - X_{\mathrm{QECO}}
 \]
 
-따라서 QoE는 \(\Delta X>0\)일 때 개선이며, Delay, Energy, dropped-task count, Runtime은 \(\Delta X<0\)일 때 개선이다. 표 안의 괄호 비율은 각 metric의 QECO 값을 기준으로 계산한 상대 변화율이며, Drop 항목의 비율은 drop probability가 아니라 dropped-task count의 상대 변화율이다. 지표 집계 방식은 그림 1에 정리하였다.
+따라서 QoE는 \(\Delta X>0\)일 때 개선이며, Delay, Energy, dropped-task count, Runtime은 \(\Delta X<0\)일 때 개선이다. 표 안의 괄호 비율은 각 metric의 QECO 값을 기준으로 계산하되, 성능 해석 기준에 따라 이득은 `+%`, 손실은 `-%`로 표기한다. Drop 항목의 비율은 drop probability가 아니라 dropped-task count의 상대 이득 또는 손실이다. 지표 집계 방식은 그림 1에 정리하였다.
 
 ![Metric aggregation formulas](./experiment_results/formula_visualizations/metric_aggregation_formula.png)
 
@@ -78,20 +78,20 @@ QECO-ADAPT는 사용자 수, 시간대별 task arrival profile, 사용자 활동
 
 ## IV. Results
 
-아래 표는 단일 edge dense 증가 조건에서 전체 400 episode 평균 기준으로 QECO 대비 QECO-ADAPT의 변화량을 정리한 것이다. 괄호 안의 값은 QECO 대비 상대 변화율이다. 최신 그림 자료는 bar 상단에 각 bar height에 해당하는 수치를 직접 표기하도록 갱신되었으며, 표는 각 scenario의 `comparison_averages.png`와 동일한 source metric을 사용한다.
+아래 표는 단일 edge dense 증가 조건에서 전체 400 episode 평균 기준으로 QECO 대비 QECO-ADAPT의 변화량을 정리한 것이다. 괄호 안의 값은 산술 변화율이 아니라 성능 해석 기준의 상대 이득 또는 손실이다. 최신 그림 자료는 bar 상단에 각 bar height에 해당하는 수치를 직접 표기하도록 갱신되었으며, 표는 각 scenario의 `comparison_averages.png`와 동일한 source metric을 사용한다.
 
 | Users | Density vs. QECO original | ΔQoE | ΔDelay | ΔEnergy | ΔDropped tasks | ΔRuntime |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 10 | 1x | -2.1422 (-9.13%) | +0.2348 (+3.65%) | -1.0399 (-7.83%) | +13.0650 (+32.85%) | +0.0796 (+5.07%) |
-| 30 | 3x | +1.2513 (+10.97%) | -0.1039 (-1.30%) | -1.0290 (-5.37%) | -21.3000 (-5.88%) | -0.1366 (-3.12%) |
-| 50 | 5x | +2.6892 (+41.45%) | -0.1565 (-1.87%) | -2.4354 (-12.25%) | -79.0525 (-10.25%) | +0.7119 (+10.98%) |
-| 80 | 8x | +3.3372 (+89.51%) | -0.1473 (-1.72%) | -3.6481 (-18.29%) | -154.8800 (-11.17%) | +1.0311 (+10.83%) |
+| 10 | 1x | -2.1422 (-9.13%) | +0.2348 (-3.65%) | -1.0399 (+7.83%) | +13.0650 (-32.85%) | +0.0796 (-5.07%) |
+| 30 | 3x | +1.2513 (+10.97%) | -0.1039 (+1.30%) | -1.0290 (+5.37%) | -21.3000 (+5.88%) | -0.1366 (+3.12%) |
+| 50 | 5x | +2.6892 (+41.45%) | -0.1565 (+1.87%) | -2.4354 (+12.25%) | -79.0525 (+10.25%) | +0.7119 (-10.98%) |
+| 80 | 8x | +3.3372 (+89.51%) | -0.1473 (+1.72%) | -3.6481 (+18.29%) | -154.8800 (+11.17%) | +1.0311 (-10.83%) |
 
-주의할 점은 위 표의 `ΔDropped tasks`와 괄호 비율이 전체 task 대비 drop rate를 의미하지 않는다는 것이다. 이 값은 전체 episode 구간에서 측정된 평균 dropped-task count를 QECO 기준으로 상대 비교한 값이다. 따라서 `+32.85%`는 task drop 확률이 32.85% 증가했다는 뜻이 아니라, QECO의 평균 dropped-task count 39.77 대비 QECO-ADAPT의 평균 dropped-task count가 52.835로 증가했다는 뜻이다.
+해석 기준은 다음과 같다. `QoE`는 증가가 이득이고, `Delay`, `Energy`, `Dropped tasks`, `Runtime`은 감소가 이득이므로 괄호 안의 `+%`는 성능상 이득, `-%`는 성능상 손실을 의미한다. 또한 `ΔDropped tasks`는 전체 task 대비 drop rate가 아니라 전체 episode 구간에서 측정된 평균 dropped-task count를 QECO 기준으로 비교한 값이다. 따라서 `+13.0650 (-32.85%)`는 task drop 확률이 32.85%라는 뜻이 아니라, QECO의 평균 dropped-task count 39.77 대비 QECO-ADAPT의 평균 dropped-task count가 52.835로 증가해 성능상 32.85% 손실이라는 뜻이다.
 
 ### A. 1x Density: 원문 기본 edge당 밀도 수준
 
-`user=10, edge=1`은 QECO 원문의 edge당 평균 사용자 밀도와 같은 1x 조건이다. 전체 episode 평균 기준으로 QECO-ADAPT는 Energy를 7.83% 줄였지만 QoE는 9.13% 감소했고 Delay도 3.65% 증가했다. Dropped-task count는 QECO의 39.77에서 QECO-ADAPT의 52.835로 13.065 tasks 증가했으며, 이는 QECO count 기준 +32.85%이다. 이는 task drop 확률의 증가율이 아니라 전체 episode 평균 dropped-task count의 상대 증가율이다. 따라서 원문 기본 밀도 수준에서는 QECO의 기본 QoE 중심 균형이 더 적합하며, 낮은 부하에서 adaptive energy penalty가 task completion 안정성 손실을 상쇄할 만큼 충분한 이득을 만들지 못한 것으로 볼 수 있다.
+`user=10, edge=1`은 QECO 원문의 edge당 평균 사용자 밀도와 같은 1x 조건이다. 전체 episode 평균 기준으로 QECO-ADAPT는 Energy를 7.83% 줄였지만 QoE는 9.13% 감소했고 Delay도 3.65% 증가했다. Dropped-task count는 QECO의 39.77에서 QECO-ADAPT의 52.835로 13.065 tasks 증가했으며, 이는 산술적으로 +32.85% 증가이지만 성능 해석상 -32.85% 손실이다. 이는 task drop 확률의 증가율이 아니라 전체 episode 평균 dropped-task count의 상대 손실이다. 따라서 원문 기본 밀도 수준에서는 QECO의 기본 QoE 중심 균형이 더 적합하며, 낮은 부하에서 adaptive energy penalty가 task completion 안정성 손실을 상쇄할 만큼 충분한 이득을 만들지 못한 것으로 볼 수 있다.
 
 <table>
   <tr>
@@ -110,7 +110,7 @@ QECO-ADAPT는 사용자 수, 시간대별 task arrival profile, 사용자 활동
 
 ### B. 3x Density: 수렴 이득이 나타나는 구간
 
-`user=30, edge=1`은 원문 기준 3x 밀도이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 10.97% 높이고, Delay, Energy, Runtime을 각각 1.30%, 5.37%, 3.12% 줄였다. Dropped-task count는 QECO의 362.1025에서 QECO-ADAPT의 340.8025로 21.3 tasks 감소했으며, 이는 QECO count 기준 -5.88%이다. 마지막 10% 평균만 보면 이 구간의 차이가 작거나 일부 지표가 애매하게 보일 수 있지만, 전체 episode 평균에서는 QECO-ADAPT가 초반 수렴 손실을 줄이며 명확한 이득을 만든다. 따라서 3x 조건은 QECO-ADAPT의 dense-aware 제어가 실질적으로 작동하기 시작하는 첫 구간으로 해석할 수 있다.
+`user=30, edge=1`은 원문 기준 3x 밀도이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 10.97% 높이고, Delay, Energy, Runtime을 각각 1.30%, 5.37%, 3.12% 줄였다. Dropped-task count는 QECO의 362.1025에서 QECO-ADAPT의 340.8025로 21.3 tasks 감소했으며, 이는 성능 해석상 +5.88% 이득이다. 마지막 10% 평균만 보면 이 구간의 차이가 작거나 일부 지표가 애매하게 보일 수 있지만, 전체 episode 평균에서는 QECO-ADAPT가 초반 수렴 손실을 줄이며 명확한 이득을 만든다. 따라서 3x 조건은 QECO-ADAPT의 dense-aware 제어가 실질적으로 작동하기 시작하는 첫 구간으로 해석할 수 있다.
 
 <table>
   <tr>
@@ -129,7 +129,7 @@ QECO-ADAPT는 사용자 수, 시간대별 task arrival profile, 사용자 활동
 
 ### C. 5x Density: QECO-ADAPT의 주요 개선 구간
 
-`user=50, edge=1`은 원문 기준 5x 밀도이며, 본 분석에서 QECO-ADAPT의 장점이 가장 균형 있게 확인된 조건이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 41.45% 높이고, Delay를 1.87%, Energy를 12.25% 낮췄다. Dropped-task count는 QECO의 771.0175에서 QECO-ADAPT의 691.965로 79.0525 tasks 감소했으며, 이는 QECO count 기준 -10.25%이다. Dense MEC에서 중요한 점은 Energy만 낮추는 것이 아니라, 학습 전 구간에서 QoE와 dropped-task count를 동시에 개선하는 것이다. 이 조건에서 QECO-ADAPT는 Energy 절감이 dropped-task count 악화로 이어지지 않았고, 오히려 task completion 안정성까지 개선했다. 따라서 5x density는 QECO-ADAPT의 초반 수렴 이점과 dense-aware energy control이 함께 확인되는 대표 조건으로 해석할 수 있다.
+`user=50, edge=1`은 원문 기준 5x 밀도이며, 본 분석에서 QECO-ADAPT의 장점이 가장 균형 있게 확인된 조건이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 41.45% 높이고, Delay를 1.87%, Energy를 12.25% 낮췄다. Dropped-task count는 QECO의 771.0175에서 QECO-ADAPT의 691.965로 79.0525 tasks 감소했으며, 이는 성능 해석상 +10.25% 이득이다. Dense MEC에서 중요한 점은 Energy만 낮추는 것이 아니라, 학습 전 구간에서 QoE와 dropped-task count를 동시에 개선하는 것이다. 이 조건에서 QECO-ADAPT는 Energy 절감이 dropped-task count 악화로 이어지지 않았고, 오히려 task completion 안정성까지 개선했다. 따라서 5x density는 QECO-ADAPT의 초반 수렴 이점과 dense-aware energy control이 함께 확인되는 대표 조건으로 해석할 수 있다.
 
 <table>
   <tr>
@@ -148,7 +148,7 @@ QECO-ADAPT는 사용자 수, 시간대별 task arrival profile, 사용자 활동
 
 ### D. 8x Density: 극고밀도 단일 edge 조건
 
-`user=80, edge=1`은 원문 기준 8x 밀도이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 89.51% 높이고, Delay를 1.72%, Energy를 18.29% 줄였다. Dropped-task count는 QECO의 1386.7975에서 QECO-ADAPT의 1231.9175로 154.88 tasks 감소했으며, 이는 QECO count 기준 -11.17%이다. 단일 edge가 80명의 사용자를 감당하는 극단적인 조건에서는 모든 알고리즘이 deadline pressure를 강하게 받기 때문에, final-window만 보면 개선 폭이 제한적으로 보일 수 있다. 그러나 전체 평균에서는 QECO-ADAPT가 초반부터 혼잡 손실을 줄여 QoE와 Energy, dropped-task count를 동시에 개선한다는 점이 뚜렷하다.
+`user=80, edge=1`은 원문 기준 8x 밀도이다. 전체 episode 평균 기준으로 QECO-ADAPT는 QoE를 89.51% 높이고, Delay를 1.72%, Energy를 18.29% 줄였다. Dropped-task count는 QECO의 1386.7975에서 QECO-ADAPT의 1231.9175로 154.88 tasks 감소했으며, 이는 성능 해석상 +11.17% 이득이다. 단일 edge가 80명의 사용자를 감당하는 극단적인 조건에서는 모든 알고리즘이 deadline pressure를 강하게 받기 때문에, final-window만 보면 개선 폭이 제한적으로 보일 수 있다. 그러나 전체 평균에서는 QECO-ADAPT가 초반부터 혼잡 손실을 줄여 QoE와 Energy, dropped-task count를 동시에 개선한다는 점이 뚜렷하다.
 
 <table>
   <tr>
