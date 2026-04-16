@@ -26,6 +26,38 @@ COLORS = {
     "qeco_adapt": "#2f7ed8",
     "twdqn": "#d08c00",
 }
+FONT_SCALE = 2
+BASE_FONT_SIZE = 10 * FONT_SCALE
+TITLE_FONT_SIZE = 12 * FONT_SCALE
+AXIS_LABEL_FONT_SIZE = 10 * FONT_SCALE
+TICK_FONT_SIZE = 10 * FONT_SCALE
+LEGEND_FONT_SIZE = 10 * FONT_SCALE
+BAR_VALUE_FONT_SIZE = 8 * FONT_SCALE
+NOTE_FONT_SIZE = 9 * FONT_SCALE
+
+
+def configure_plot_fonts(plt) -> None:
+    plt.rcParams.update(
+        {
+            "font.size": BASE_FONT_SIZE,
+            "axes.titlesize": TITLE_FONT_SIZE,
+            "axes.labelsize": AXIS_LABEL_FONT_SIZE,
+            "xtick.labelsize": TICK_FONT_SIZE,
+            "ytick.labelsize": TICK_FONT_SIZE,
+            "legend.fontsize": LEGEND_FONT_SIZE,
+        }
+    )
+
+
+def style_axis_text(ax, x_label_rotation: int | None = None) -> None:
+    ax.title.set_fontsize(TITLE_FONT_SIZE)
+    ax.xaxis.label.set_fontsize(AXIS_LABEL_FONT_SIZE)
+    ax.yaxis.label.set_fontsize(AXIS_LABEL_FONT_SIZE)
+    ax.tick_params(axis="both", labelsize=TICK_FONT_SIZE)
+    if x_label_rotation is not None:
+        ax.tick_params(axis="x", labelrotation=x_label_rotation)
+        for label in ax.get_xticklabels():
+            label.set_ha("right")
 
 
 def format_bar_value(value: float) -> str:
@@ -43,20 +75,20 @@ def annotate_bars(ax, bars) -> None:
         max_height = max(heights)
         min_height = min(heights)
         if max_height > 0:
-            ax.set_ylim(top=max_height * 1.14)
+            ax.set_ylim(top=max_height * 1.24)
         if min_height < 0:
-            ax.set_ylim(bottom=min_height * 1.14)
+            ax.set_ylim(bottom=min_height * 1.24)
 
     for bar in bars:
         height = bar.get_height()
         ax.annotate(
             format_bar_value(height),
             xy=(bar.get_x() + bar.get_width() / 2, height),
-            xytext=(0, 4),
+            xytext=(0, 8),
             textcoords="offset points",
             ha="center",
             va="bottom",
-            fontsize=8,
+            fontsize=BAR_VALUE_FONT_SIZE,
             rotation=0,
         )
 
@@ -314,6 +346,7 @@ def render_charts(
 ) -> int:
     import matplotlib.pyplot as plt
 
+    configure_plot_fonts(plt)
     aligned = {
         metric: aligned_metric_values(all_metrics, metric)
         for metric in ("qoe", "delay", "energy", "drop")
@@ -341,7 +374,8 @@ def render_charts(
         ax.set_xlabel("Aligned Step")
         ax.set_ylabel(metric_labels[metric])
         ax.grid(True, linestyle="--", alpha=0.5)
-        ax.legend()
+        ax.legend(fontsize=LEGEND_FONT_SIZE)
+        style_axis_text(ax)
 
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_timeseries.png", dpi=120, bbox_inches="tight")
@@ -372,7 +406,8 @@ def render_charts(
         ax.set_xlabel("Aligned Step")
         ax.set_ylabel(metric_labels[metric])
         ax.grid(True, linestyle="--", alpha=0.5)
-        ax.legend()
+        ax.legend(fontsize=LEGEND_FONT_SIZE)
+        style_axis_text(ax)
         ax.text(
             0.99,
             0.02,
@@ -380,7 +415,7 @@ def render_charts(
             transform=ax.transAxes,
             ha="right",
             va="bottom",
-            fontsize=9,
+            fontsize=NOTE_FONT_SIZE,
             color="#444444",
             bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.7, "edgecolor": "#cccccc"},
         )
@@ -401,7 +436,7 @@ def render_charts(
         annotate_bars(ax, bars)
         ax.set_title(f"Average {metric_labels[metric]}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-        ax.tick_params(axis="x", rotation=15)
+        style_axis_text(ax, x_label_rotation=20)
 
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_averages.png", dpi=120, bbox_inches="tight")
@@ -412,6 +447,7 @@ def render_charts(
 def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output_dir: Path, algorithms: tuple[str, ...]) -> None:
     import matplotlib.pyplot as plt
 
+    configure_plot_fonts(plt)
     fig, axs = plt.subplots(2, 2, figsize=(13, 8))
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         finals = [tail_mean(final_metrics[algorithm][metric], 0.1) for algorithm in algorithms]
@@ -424,7 +460,7 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
         annotate_bars(ax, bars)
         ax.set_title(f"Raw Episode Final 10% Mean {metric.capitalize()}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-        ax.tick_params(axis="x", rotation=15)
+        style_axis_text(ax, x_label_rotation=20)
 
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_finals.png", dpi=120, bbox_inches="tight")
@@ -434,6 +470,7 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
 def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path, algorithms: tuple[str, ...]) -> None:
     import matplotlib.pyplot as plt
 
+    configure_plot_fonts(plt)
     trimmed_medians = [runtime_stats(runtime_data[algorithm])["trimmed_median"] for algorithm in algorithms]
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(
@@ -446,7 +483,7 @@ def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path,
     ax.set_title("Trimmed Median Episode Runtime")
     ax.set_ylabel("Seconds per Episode")
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-    ax.tick_params(axis="x", rotation=15)
+    style_axis_text(ax, x_label_rotation=20)
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_runtime.png", dpi=120, bbox_inches="tight")
     plt.close(fig)
