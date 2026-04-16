@@ -37,6 +37,14 @@ The manuscript runtime discussion uses [runtime_summary.csv](./runtime_summary.c
 | S6 | 80 | 1 | 8.7433 | 9.5163 | 10.5473 | 10.2755 | DROO |
 | S7 | 80 | 3 | 8.9307 | 9.6805 | 9.6528 | 9.5089 | DROO |
 
+## Additional Dense Scenario Artifacts
+
+The folder [user_50_ep_400_edge_3](./user_50_ep_400_edge_3/) is retained as an additional dense comparison point for the supplementary QECO-ADAPT dense analysis report.
+
+| Setting | Final CSV | Final Figure | Average Figure | Smoothed Time-Series | Runtime Figure | Summary JSON |
+| --- | --- | --- | --- | --- | --- | --- |
+| users=50, edges=3 | [CSV](./user_50_ep_400_edge_3/comparison_finals.csv) | [Final](./user_50_ep_400_edge_3/comparison_finals.png) | [Average](./user_50_ep_400_edge_3/comparison_averages.png) | [Time-series](./user_50_ep_400_edge_3/comparison_timeseries_smoothed.png) | [Runtime](./user_50_ep_400_edge_3/comparison_runtime.png) | [JSON](./user_50_ep_400_edge_3/comparison_summary.json) |
+
 ## Auxiliary CD Check
 
 The folder [user_10_ep_400_edge_1__cd-qeco-qeco-adapt](./user_10_ep_400_edge_1__cd-qeco-qeco-adapt/) is retained as auxiliary evidence for excluding CD from the main comparison. In that setting, CD recorded `14.3218s` trimmed median episode runtime, while QECO and QECO-ADAPT recorded `1.4273s` and `1.4349s`.

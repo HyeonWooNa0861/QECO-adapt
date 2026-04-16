@@ -8,6 +8,10 @@ The main paper draft is rendered directly on GitHub:
 
 The manuscript uses repository-relative image links, so formula figures and comparison graphs are visible directly in GitHub Markdown.
 
+Additional analysis report:
+
+- [dense_qeco_adapt_analysis_kr.md](./dense_qeco_adapt_analysis_kr.md)
+
 ## Main Commands
 
 Run one common-environment algorithm:
