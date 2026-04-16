@@ -37,9 +37,9 @@ The manuscript runtime discussion uses [runtime_summary.csv](./runtime_summary.c
 | S6 | 80 | 1 | 8.7433 | 9.5163 | 10.5473 | 10.2755 | DROO |
 | S7 | 80 | 3 | 8.9307 | 9.6805 | 9.6528 | 9.5089 | DROO |
 
-## Additional Dense Scenario Artifacts
+## Optional Supplemental Scenario Artifacts
 
-The folder [user_50_ep_400_edge_3](./user_50_ep_400_edge_3/) is retained as an additional dense comparison point for the supplementary QECO-ADAPT dense analysis report.
+The folder [user_50_ep_400_edge_3](./user_50_ep_400_edge_3/) is retained as an optional supplemental comparison point. It is not part of the single-edge dense sweep report, which focuses on `edges=1`.
 
 | Setting | Final CSV | Final Figure | Average Figure | Smoothed Time-Series | Runtime Figure | Summary JSON |
 | --- | --- | --- | --- | --- | --- | --- |
