@@ -27,6 +27,39 @@ COLORS = {
     "twdqn": "#d08c00",
 }
 
+
+def format_bar_value(value: float) -> str:
+    abs_value = abs(value)
+    if abs_value >= 100:
+        return f"{value:.1f}"
+    if abs_value >= 10:
+        return f"{value:.2f}"
+    return f"{value:.3f}"
+
+
+def annotate_bars(ax, bars) -> None:
+    heights = [bar.get_height() for bar in bars]
+    if heights:
+        max_height = max(heights)
+        min_height = min(heights)
+        if max_height > 0:
+            ax.set_ylim(top=max_height * 1.14)
+        if min_height < 0:
+            ax.set_ylim(bottom=min_height * 1.14)
+
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(
+            format_bar_value(height),
+            xy=(bar.get_x() + bar.get_width() / 2, height),
+            xytext=(0, 4),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            rotation=0,
+        )
+
 def load_run_profile(run_dir: Path) -> dict:
     config_path = run_dir / "experiment_config.json"
     if not config_path.exists():
@@ -359,12 +392,13 @@ def render_charts(
     fig, axs = plt.subplots(2, 2, figsize=(13, 8))
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         averages = [mean(aligned[metric][algorithm]) for algorithm in algorithms]
-        ax.bar(
+        bars = ax.bar(
             [LABELS[algorithm] for algorithm in algorithms],
             averages,
             color=[COLORS[algorithm] for algorithm in algorithms],
             width=0.6,
         )
+        annotate_bars(ax, bars)
         ax.set_title(f"Average {metric_labels[metric]}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=15)
@@ -381,12 +415,13 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
     fig, axs = plt.subplots(2, 2, figsize=(13, 8))
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         finals = [tail_mean(final_metrics[algorithm][metric], 0.1) for algorithm in algorithms]
-        ax.bar(
+        bars = ax.bar(
             [LABELS[algorithm] for algorithm in algorithms],
             finals,
             color=[COLORS[algorithm] for algorithm in algorithms],
             width=0.6,
         )
+        annotate_bars(ax, bars)
         ax.set_title(f"Raw Episode Final 10% Mean {metric.capitalize()}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
         ax.tick_params(axis="x", rotation=15)
@@ -401,12 +436,13 @@ def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path,
 
     trimmed_medians = [runtime_stats(runtime_data[algorithm])["trimmed_median"] for algorithm in algorithms]
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(
+    bars = ax.bar(
         [LABELS[algorithm] for algorithm in algorithms],
         trimmed_medians,
         color=[COLORS[algorithm] for algorithm in algorithms],
         width=0.6,
     )
+    annotate_bars(ax, bars)
     ax.set_title("Trimmed Median Episode Runtime")
     ax.set_ylabel("Seconds per Episode")
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
