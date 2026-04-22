@@ -23,7 +23,7 @@ BAR_LABELS = {
     "droo": "DROO",
     "qeco": "QECO",
     "cd": "CD",
-    "qeco_adapt": "QECO-ADAPT",
+    "qeco_adapt": "QECO-\nADAPT",
     "twdqn": "Tang&Wong\nDQN",
 }
 COLORS = {
@@ -33,14 +33,14 @@ COLORS = {
     "qeco_adapt": "#2f7ed8",
     "twdqn": "#d08c00",
 }
-FONT_SCALE = 1.35
-BASE_FONT_SIZE = 13
-TITLE_FONT_SIZE = 16
-AXIS_LABEL_FONT_SIZE = 13
-TICK_FONT_SIZE = 11
-LEGEND_FONT_SIZE = 11
-BAR_VALUE_FONT_SIZE = 10
-NOTE_FONT_SIZE = 10
+FONT_SCALE = 1.7
+BASE_FONT_SIZE = 10 * FONT_SCALE
+TITLE_FONT_SIZE = 12 * FONT_SCALE
+AXIS_LABEL_FONT_SIZE = 10 * FONT_SCALE
+TICK_FONT_SIZE = 10 * FONT_SCALE
+LEGEND_FONT_SIZE = 10 * FONT_SCALE
+BAR_VALUE_FONT_SIZE = 8 * FONT_SCALE
+NOTE_FONT_SIZE = 9 * FONT_SCALE
 
 
 def configure_plot_fonts(plt) -> None:
