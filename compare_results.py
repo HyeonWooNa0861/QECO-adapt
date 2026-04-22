@@ -19,6 +19,13 @@ LABELS = {
     "qeco_adapt": "QECO-ADAPT",
     "twdqn": "Tang&Wong DQN",
 }
+BAR_LABELS = {
+    "droo": "DROO",
+    "qeco": "QECO",
+    "cd": "CD",
+    "qeco_adapt": "QECO-ADAPT",
+    "twdqn": "Tang&Wong\nDQN",
+}
 COLORS = {
     "droo": "#0b6e4f",
     "qeco": "#b33f62",
@@ -428,7 +435,7 @@ def render_charts(
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         averages = [mean(aligned[metric][algorithm]) for algorithm in algorithms]
         bars = ax.bar(
-            [LABELS[algorithm] for algorithm in algorithms],
+            [BAR_LABELS[algorithm] for algorithm in algorithms],
             averages,
             color=[COLORS[algorithm] for algorithm in algorithms],
             width=0.6,
@@ -436,7 +443,7 @@ def render_charts(
         annotate_bars(ax, bars)
         ax.set_title(f"Average {metric_labels[metric]}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-        style_axis_text(ax, x_label_rotation=20)
+        style_axis_text(ax)
 
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_averages.png", dpi=120, bbox_inches="tight")
@@ -452,7 +459,7 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         finals = [tail_mean(final_metrics[algorithm][metric], 0.1) for algorithm in algorithms]
         bars = ax.bar(
-            [LABELS[algorithm] for algorithm in algorithms],
+            [BAR_LABELS[algorithm] for algorithm in algorithms],
             finals,
             color=[COLORS[algorithm] for algorithm in algorithms],
             width=0.6,
@@ -460,7 +467,7 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
         annotate_bars(ax, bars)
         ax.set_title(f"Raw Episode Final 10% Mean {metric.capitalize()}")
         ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-        style_axis_text(ax, x_label_rotation=20)
+        style_axis_text(ax)
 
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_finals.png", dpi=120, bbox_inches="tight")
@@ -474,7 +481,7 @@ def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path,
     trimmed_medians = [runtime_stats(runtime_data[algorithm])["trimmed_median"] for algorithm in algorithms]
     fig, ax = plt.subplots(figsize=(10, 4.8))
     bars = ax.bar(
-        [LABELS[algorithm] for algorithm in algorithms],
+        [BAR_LABELS[algorithm] for algorithm in algorithms],
         trimmed_medians,
         color=[COLORS[algorithm] for algorithm in algorithms],
         width=0.6,
@@ -483,7 +490,7 @@ def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path,
     ax.set_title("Trimmed Median Episode Runtime")
     ax.set_ylabel("Seconds per Episode")
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-    style_axis_text(ax, x_label_rotation=20)
+    style_axis_text(ax)
     plt.tight_layout()
     fig.savefig(output_dir / "comparison_runtime.png", dpi=120, bbox_inches="tight")
     plt.close(fig)
