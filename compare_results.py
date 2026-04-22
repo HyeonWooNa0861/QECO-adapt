@@ -26,14 +26,14 @@ COLORS = {
     "qeco_adapt": "#2f7ed8",
     "twdqn": "#d08c00",
 }
-FONT_SCALE = 2
-BASE_FONT_SIZE = 10 * FONT_SCALE
-TITLE_FONT_SIZE = 12 * FONT_SCALE
-AXIS_LABEL_FONT_SIZE = 10 * FONT_SCALE
-TICK_FONT_SIZE = 10 * FONT_SCALE
-LEGEND_FONT_SIZE = 10 * FONT_SCALE
-BAR_VALUE_FONT_SIZE = 8 * FONT_SCALE
-NOTE_FONT_SIZE = 9 * FONT_SCALE
+FONT_SCALE = 1.35
+BASE_FONT_SIZE = 13
+TITLE_FONT_SIZE = 16
+AXIS_LABEL_FONT_SIZE = 13
+TICK_FONT_SIZE = 11
+LEGEND_FONT_SIZE = 11
+BAR_VALUE_FONT_SIZE = 10
+NOTE_FONT_SIZE = 10
 
 
 def configure_plot_fonts(plt) -> None:
@@ -360,7 +360,7 @@ def render_charts(
         "drop": "Drop",
     }
 
-    fig, axs = plt.subplots(4, 1, figsize=(12, 22))
+    fig, axs = plt.subplots(4, 1, figsize=(12, 18))
     for ax, metric in zip(axs, ("qoe", "delay", "energy", "drop")):
         for algorithm in algorithms:
             ax.plot(
@@ -381,7 +381,7 @@ def render_charts(
     fig.savefig(output_dir / "comparison_timeseries.png", dpi=120, bbox_inches="tight")
     plt.close(fig)
 
-    fig, axs = plt.subplots(4, 1, figsize=(12, 22))
+    fig, axs = plt.subplots(4, 1, figsize=(12, 18))
     for ax, metric in zip(axs, ("qoe", "delay", "energy", "drop")):
         for algorithm in algorithms:
             raw_values = aligned[metric][algorithm]
@@ -424,7 +424,7 @@ def render_charts(
     fig.savefig(output_dir / "comparison_timeseries_smoothed.png", dpi=120, bbox_inches="tight")
     plt.close(fig)
 
-    fig, axs = plt.subplots(2, 2, figsize=(13, 8))
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8.5))
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         averages = [mean(aligned[metric][algorithm]) for algorithm in algorithms]
         bars = ax.bar(
@@ -448,7 +448,7 @@ def render_finals_chart(final_metrics: dict[str, dict[str, list[float]]], output
     import matplotlib.pyplot as plt
 
     configure_plot_fonts(plt)
-    fig, axs = plt.subplots(2, 2, figsize=(13, 8))
+    fig, axs = plt.subplots(2, 2, figsize=(14, 8.5))
     for ax, metric in zip(axs.flat, ("qoe", "delay", "energy", "drop")):
         finals = [tail_mean(final_metrics[algorithm][metric], 0.1) for algorithm in algorithms]
         bars = ax.bar(
@@ -472,7 +472,7 @@ def render_runtime_chart(runtime_data: dict[str, list[float]], output_dir: Path,
 
     configure_plot_fonts(plt)
     trimmed_medians = [runtime_stats(runtime_data[algorithm])["trimmed_median"] for algorithm in algorithms]
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(10, 4.8))
     bars = ax.bar(
         [LABELS[algorithm] for algorithm in algorithms],
         trimmed_medians,
