@@ -74,49 +74,25 @@ $$
 
 여기서 unfinished task는 deadline 내 완료되지 못한 task를 의미한다. 따라서 QECO-ADAPT는 task가 완료되지 못한 경우에는 비용을 그대로 penalty로 부여하고, 완료된 경우에는 최대 허용 delay 기준 보상에서 adaptive cost를 차감한다. 위 식은 QECO-ADAPT가 기존 QECO reward 위에 추가한 부하 적응형 reward/control 항을 정의한다.
 
-딥러닝 전체 학습 과정은 기존 QECO의 Dueling Double Deep Q-Network 구조를 따른다. 시점 $t$에서 관측 상태를 $o_t$, LSTM에 입력되는 최근 edge-load history를 $h_t$, 선택 action을 $a_t$, QECO-ADAPT reward를 $r_t^{adapt}$라고 하면 replay memory에 저장되는 transition은 다음과 같이 표현된다.
+딥러닝 학습 과정은 기존 QECO의 Dueling Double Deep Q-Network 구조를 따른다. 다만 본 논문의 목적은 새로운 DQN 구조를 제안하는 것이 아니라, 기존 QECO 학습 루프 안에 부하 적응형 reward를 삽입하는 것이다. 따라서 학습 과정은 transition, Double DQN target, TD loss의 세 식으로 축약해 표현한다. 시점 $t$에서 관측 상태를 $o_t$, LSTM에 입력되는 최근 edge-load history를 $h_t$, 선택 action을 $a_t$, QECO-ADAPT reward를 $r_t^{adapt}$라고 하면 학습에 사용되는 transition은 다음과 같다.
 
 $$
 e_t=\left(o_t,h_t,a_t,r_t^{adapt},o_{t+1},h_{t+1}\right)
 $$
 
-$$
-\mathcal{D}\leftarrow \mathcal{D}\cup\{e_t\},\qquad
-e_j\sim\mathrm{Uniform}(\mathcal{D})
-$$
-
-여기서 $\mathcal{D}$는 replay memory이며, mini-batch 학습 시에는 $\mathcal{D}$에서 $B$개의 transition을 균등 표본 추출한다. 현재 구현에서 $\epsilon_t$는 greedy action을 선택할 확률로 사용되므로, 학습이 진행되어 $\epsilon_t$가 증가할수록 random exploration보다 Q-value 기반 action 선택 비중이 커진다.
-
-$$
-a_t=
-\begin{cases}
-\arg\max_{a\in\mathcal{A}}Q(o_t,h_t,a;\theta), & \text{with probability } \epsilon_t\\
-\text{random action}, & \text{with probability } 1-\epsilon_t
-\end{cases}
-$$
-
-QECO-ADAPT의 Q-network는 관측 상태 $o_t$와 LSTM load history $h_t$를 함께 입력으로 사용한다. Dueling 구조에서는 state value $V$와 action advantage $A$를 분리해 추정한 뒤, 다음과 같이 Q-value를 구성한다.
-
-$$
-Q(o,h,a;\theta)
-=V(o,h;\theta)+A(o,h,a;\theta)
--\frac{1}{|\mathcal{A}|}\sum_{a'\in\mathcal{A}}A(o,h,a';\theta)
-$$
-
-Double DQN 학습에서는 다음 상태의 action 선택은 evaluation network parameter $\theta$로 수행하고, target value 평가는 target network parameter $\theta^{-}$로 수행한다.
-
-$$
-a_j^{*}
-=\arg\max_{a'\in\mathcal{A}}Q(o_{j+1},h_{j+1},a';\theta)
-$$
+이 식은 일반 DQN의 현재 상태와 다음 상태뿐 아니라, edge load history $h_t$와 부하 적응형 reward $r_t^{adapt}$가 학습 경험에 포함됨을 보여준다. 즉 QECO-ADAPT의 제어 효과는 별도 최적화 solver가 아니라 replay transition의 reward 항을 통해 Q-learning target에 반영된다. Double DQN target은 다음과 같이 정의한다.
 
 $$
 y_j
 =r_j^{adapt}
-+\gamma Q(o_{j+1},h_{j+1},a_j^{*};\theta^{-})
++\gamma Q\left(
+o_{j+1},h_{j+1},
+\arg\max_{a\in\mathcal{A}}Q(o_{j+1},h_{j+1},a;\theta);
+\theta^{-}
+\right)
 $$
 
-따라서 mini-batch에 대한 TD loss는 선택된 action의 Q-value와 target value의 평균제곱오차로 정의된다.
+여기서 action 선택은 evaluation network parameter $\theta$로 수행하고, target value 평가는 target network parameter $\theta^{-}$로 수행한다. 핵심은 target의 즉시 보상 항이 기존 QECO reward가 아니라 $r_j^{adapt}$라는 점이다. 따라서 adaptive energy weight와 offloading 보수화의 효과가 다음 action-value 추정에 직접 들어간다. 마지막으로 mini-batch에 대한 TD loss는 다음과 같이 정의된다.
 
 $$
 \mathcal{L}(\theta)
@@ -124,22 +100,7 @@ $$
 \left(y_j-Q(o_j,h_j,a_j;\theta)\right)^2
 $$
 
-evaluation network parameter는 RMSProp optimizer를 통해 갱신되며, target network는 일정 학습 step $C$마다 evaluation network의 parameter를 복사한다.
-
-$$
-\theta\leftarrow\mathrm{RMSProp}\left(\theta,\nabla_{\theta}\mathcal{L}(\theta),\eta\right)
-$$
-
-$$
-\theta^{-}\leftarrow\theta
-\qquad \text{every } C \text{ learning steps}
-$$
-
-$$
-\epsilon_{t+1}=\min(\epsilon_t+\Delta\epsilon,\epsilon_{\max})
-$$
-
-여기서 $\theta$는 evaluation network parameter, $\theta^{-}$는 target network parameter, $\gamma$는 reward discount factor, $B$는 mini-batch size, $\eta$는 learning rate, $C$는 target network update interval, $\mathcal{A}$는 action space이다. 즉 QECO-ADAPT는 DQN의 학습 구조 자체를 새로 설계한 알고리즘이 아니라, 기존 QECO의 Dueling Double DQN 학습 루프 안에서 reward와 부하 반응 계수를 적응형으로 바꾼 변형이다.
+여기서 $\theta$는 evaluation network parameter, $\theta^{-}$는 target network parameter, $\gamma$는 reward discount factor, $B$는 mini-batch size, $\mathcal{A}$는 action space이다. 행동 선택은 기존 QECO와 같이 $\epsilon$-greedy 정책을 따르고, Q-network는 현재 관측 상태와 LSTM load history를 함께 입력받는 dueling 구조를 사용한다. Target network 갱신과 optimizer는 기존 QECO 구현을 따르므로 별도의 수식 전개 대신 문장으로만 처리한다. 이처럼 세 개의 수식만으로도 경험 저장, adaptive reward가 포함된 target 계산, Q-network 학습이라는 QECO-ADAPT의 핵심 학습 흐름을 설명할 수 있다.
 
 QECO-ADAPT의 핵심은 부하가 증가할수록 energy-aware behavior를 강화하되, 기존 QECO의 action structure를 크게 바꾸지 않는다는 점이다. 기존 QECO reward에서 energy term에 adaptive energy weight를 적용하고, 부하가 큰 상황에서 과도한 오프로딩 또는 에너지 소비가 발생하지 않도록 보수화 강도를 조절한다. 이는 per-frame iterative solver를 추가하는 방식이 아니라 닫힌형 수식으로 penalty strength를 조정하는 방식이므로, 기존 QECO의 실행 구조를 유지하면서 부하 반응성을 추가할 수 있다.
 
