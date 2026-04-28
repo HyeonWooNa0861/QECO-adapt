@@ -2,19 +2,19 @@
 
 ## 1. 서론
 
-모바일 엣지 컴퓨팅(Mobile Edge Computing, MEC) 환경에서 계산 오프로딩은 사용자 단말의 제한된 계산 능력과 배터리 제약을 완화하기 위한 핵심 기술이다.[2] 그러나 사용자가 증가하고 단일 edge node에 작업 요청이 집중되면, edge node의 처리 부하가 커지고 task delay와 deadline violation이 증가하며 일부 task는 dropped될 수 있다.[6] 특히 deadline-sensitive task가 존재하는 MEC 환경에서는 오프로딩 결정이 단순히 에너지 절감만을 목표로 할 수 없으며, 사용자 체감 품질(Quality of Experience, QoE), 지연 시간, 에너지 소비, dropped-task count를 동시에 고려해야 한다.
+모바일 엣지 컴퓨팅(Mobile Edge Computing, MEC) 환경에서 계산 오프로딩은 사용자 단말의 제한된 계산 능력과 배터리 제약을 완화하기 위한 핵심 기술이다[2]. 그러나 사용자가 증가하고 단일 edge node에 작업 요청이 집중되면, edge node의 처리 부하가 커지고 task delay와 deadline violation이 증가하며 일부 task는 dropped될 수 있다[6]. 특히 deadline-sensitive task가 존재하는 MEC 환경에서는 오프로딩 결정이 단순히 에너지 절감만을 목표로 할 수 없으며, 사용자 체감 품질(Quality of Experience, QoE), 지연 시간, 에너지 소비, dropped-task count를 동시에 고려해야 한다.
 
-기존 QECO는 QoE-Oriented Computation Offloading을 목표로 하는 강화학습 기반 오프로딩 알고리즘으로, task completion, delay, energy를 함께 반영해 장기 QoE를 최대화하도록 설계된다.[2] 이러한 QoE 중심 구조는 저부하 또는 일반적인 MEC 조건에서 안정적인 성능을 보이지만, 단일 edge node에 사용자가 집중되는 dense 환경에서는 학습 초반의 불안정성과 높은 부하에 따른 energy pressure가 동시에 나타날 수 있다. 즉 기존 QECO는 후반 안정 정책에서는 강점을 가지지만, 부하가 빠르게 증가하는 환경에서 warm-up 구간의 QoE 손실과 dropped-task 누적을 줄이는 데에는 추가적인 보완이 필요하다.
+기존 QECO는 QoE-Oriented Computation Offloading을 목표로 하는 강화학습 기반 오프로딩 알고리즘으로, task completion, delay, energy를 함께 반영해 장기 QoE를 최대화하도록 설계된다[2]. 이러한 QoE 중심 구조는 저부하 또는 일반적인 MEC 조건에서 안정적인 성능을 보이지만, 단일 edge node에 사용자가 집중되는 dense 환경에서는 학습 초반의 불안정성과 높은 부하에 따른 energy pressure가 동시에 나타날 수 있다. 즉 기존 QECO는 후반 안정 정책에서는 강점을 가지지만, 부하가 빠르게 증가하는 환경에서 warm-up 구간의 QoE 손실과 dropped-task 누적을 줄이는 데에는 추가적인 보완이 필요하다.
 
 본 분석은 이러한 문제의식에서 출발하여 QECO-ADAPT의 단일 edge dense 환경 성능을 검토한다. QECO-ADAPT는 기존 QECO의 QoE reward 구조 위에 effective load 기반 energy weight와 offloading gating을 결합한 변형 알고리즘이다. 본 분석의 목적은 QECO-ADAPT가 기존 QECO를 모든 조건에서 대체할 수 있는지 확인하는 것이 아니라, 사용자 밀도가 증가하는 단일 edge 환경에서 QECO의 초반 수렴 손실을 줄이고, 이후 후반 안정 구간에서는 QECO의 성능을 얼마나 잘 따라가는지 확인하는 데 있다.
 
-비교군 중 DROO는 원문에서 wireless powered MEC의 binary online offloading과 계산 시간 절감을 다루는 알고리즘이므로, 본 분석에서는 에너지 효율 및 계산 비용 관점의 baseline 출처로만 사용한다.[1] 즉 본문에서 관찰하는 QoE, Delay, Dropped tasks 비교는 원문 DROO의 평가 지표를 그대로 인용한 것이 아니라, 공통 MEC 평가 환경에서 동일 지표로 다시 측정한 본 실험 결과이다.
+비교군 중 DROO는 원문에서 wireless powered MEC의 binary online offloading과 계산 시간 절감을 다루는 알고리즘이므로, 본 분석에서는 에너지 효율 및 계산 비용 관점의 baseline 출처로만 사용한다[1]. 즉 본문에서 관찰하는 QoE, Delay, Dropped tasks 비교는 원문 DROO의 평가 지표를 그대로 인용한 것이 아니라, 공통 MEC 평가 환경에서 동일 지표로 다시 측정한 본 실험 결과이다.
 
 ## 2. 본론
 
 ### 2.1 실험 기준과 평가 방식
 
-QECO 원문은 기본 실험 환경으로 50 mobile devices (MDs)와 5 edge nodes (ENs)를 사용하므로, edge당 평균 사용자 밀도는 10 MDs/EN으로 볼 수 있다.[2] 본 분석에서는 이 값을 기준 밀도 $d_0=10$으로 두고, edge 수를 1로 고정한 상태에서 사용자 수를 10, 30, 50, 80으로 증가시켰다. 따라서 각 조건은 원문 QECO의 edge당 사용자 밀도 대비 1x, 3x, 5x, 8x dense stress condition으로 해석된다. 이 방식은 edge 확장 효과를 제거하고, 단일 edge node가 감당해야 하는 사용자 밀도 증가가 QECO-ADAPT의 성능에 어떤 영향을 미치는지 직접 관찰하기 위한 구성이다.
+QECO 원문은 기본 실험 환경으로 50 mobile devices (MDs)와 5 edge nodes (ENs)를 사용하므로, edge당 평균 사용자 밀도는 10 MDs/EN으로 볼 수 있다[2]. 본 분석에서는 이 값을 기준 밀도 $d_0=10$으로 두고, edge 수를 1로 고정한 상태에서 사용자 수를 10, 30, 50, 80으로 증가시켰다. 따라서 각 조건은 원문 QECO의 edge당 사용자 밀도 대비 1x, 3x, 5x, 8x dense stress condition으로 해석된다. 이 방식은 edge 확장 효과를 제거하고, 단일 edge node가 감당해야 하는 사용자 밀도 증가가 QECO-ADAPT의 성능에 어떤 영향을 미치는지 직접 관찰하기 위한 구성이다.
 
 본 분석에서는 전체 400 episode 평균을 주 비교 기준으로 사용한다. QECO-ADAPT의 핵심 이점은 최종 안정 구간에서의 일방적 우월성이 아니라, 학습 초반부터 QoE 손실과 dropped-task count 누적을 줄이는 수렴성에 있기 때문이다. 따라서 전체 episode 평균은 warm-up 구간에서의 손실까지 포함하는 지표로 사용한다. 반면 final 10% 평균은 후반 안정 구간에서 QECO-ADAPT가 기존 QECO의 성능을 얼마나 잘 따라가는지 확인하는 보조 지표로 해석한다.
 
@@ -44,7 +44,7 @@ $$
 
 이때 $L_{\mathrm{eff}}$는 edge 하나에 평균적으로 도착할 것으로 예상되는 task pressure를 의미한다. 즉 사용자 수 $N$이 증가하면 $L_{\mathrm{eff}}$는 커지고, edge 수 $M$이 증가하면 edge당 부하가 나뉘기 때문에 $L_{\mathrm{eff}}$는 작아진다. 본 분석처럼 $M=1$로 고정하면 사용자 수 증가가 곧 effective load 증가로 이어진다.
 
-온라인 multi-user MEC에서 stochastic task arrival, wireless quality, queue backlog를 함께 고려해야 한다는 관점은 HAP-assisted MEC의 dynamic offloading/resource allocation 연구에서도 공통적으로 다뤄진다.[5] 또한 Lyapunov-guided DRL 계열 연구는 time-varying channel과 stochastic task arrival 하에서 long-term queue stability를 명시적으로 고려하므로, dense 조건에서 단순 최종 보상뿐 아니라 안정성 지표를 함께 보아야 한다는 배경 근거가 된다.[4]
+온라인 multi-user MEC에서 stochastic task arrival, wireless quality, queue backlog를 함께 고려해야 한다는 관점은 HAP-assisted MEC의 dynamic offloading/resource allocation 연구에서도 공통적으로 다뤄진다[5]. 또한 Lyapunov-guided DRL 계열 연구는 time-varying channel과 stochastic task arrival 하에서 long-term queue stability를 명시적으로 고려하므로, dense 조건에서 단순 최종 보상뿐 아니라 안정성 지표를 함께 보아야 한다는 배경 근거가 된다[4].
 
 QECO-ADAPT는 이 유효 부하를 adaptive gating과 energy weight에 반영한다. edge당 부하 스케일 상수를 $\lambda$라고 하면, gating denominator에 들어가는 scale은 $c=M\lambda$로 정의된다. Adaptive gating strength는 다음과 같다.
 
@@ -78,7 +78,7 @@ $$
 
 여기서 unfinished task는 deadline 내 완료되지 못한 task를 의미한다. 따라서 QECO-ADAPT는 task가 완료되지 못한 경우에는 비용을 그대로 penalty로 부여하고, 완료된 경우에는 최대 허용 delay 기준 보상에서 adaptive cost를 차감한다. 위 식은 QECO-ADAPT가 기존 QECO reward 위에 추가한 부하 적응형 reward/control 항을 정의한다.
 
-딥러닝 학습 과정은 기존 QECO의 Dueling Double Deep Q-Network 구조를 따른다.[2] 다만 본 논문의 목적은 새로운 DQN 구조를 제안하는 것이 아니라, 기존 QECO 학습 루프 안에 부하 적응형 reward를 삽입하는 것이다. 따라서 학습 과정은 transition, Double DQN target, TD loss의 세 식으로 축약해 표현한다. 시점 $t$에서 관측 상태를 $o_t$, LSTM에 입력되는 최근 edge-load history를 $h_t$, 선택 action을 $a_t$, QECO-ADAPT reward를 $r_t^{adapt}$라고 하면 학습에 사용되는 transition은 다음과 같다.
+딥러닝 학습 과정은 기존 QECO의 Dueling Double Deep Q-Network 구조를 따른다[2]. 다만 본 논문의 목적은 새로운 DQN 구조를 제안하는 것이 아니라, 기존 QECO 학습 루프 안에 부하 적응형 reward를 삽입하는 것이다. 따라서 학습 과정은 transition, Double DQN target, TD loss의 세 식으로 축약해 표현한다. 시점 $t$에서 관측 상태를 $o_t$, LSTM에 입력되는 최근 edge-load history를 $h_t$, 선택 action을 $a_t$, QECO-ADAPT reward를 $r_t^{adapt}$라고 하면 학습에 사용되는 transition은 다음과 같다.
 
 $$
 e_t=\left(o_t,h_t,a_t,r_t^{adapt},o_{t+1},h_{t+1}\right)
@@ -106,7 +106,7 @@ $$
 
 여기서 $\theta$는 evaluation network parameter, $\theta^{-}$는 target network parameter, $\gamma$는 reward discount factor, $B$는 mini-batch size, $\mathcal{A}$는 action space이다. 행동 선택은 기존 QECO와 같이 $\epsilon$-greedy 정책을 따르고, Q-network는 현재 관측 상태와 LSTM load history를 함께 입력받는 dueling 구조를 사용한다. Target network 갱신과 optimizer는 기존 QECO 구현을 따르므로 별도의 수식 전개 대신 문장으로만 처리한다. 이처럼 세 개의 수식만으로도 경험 저장, adaptive reward가 포함된 target 계산, Q-network 학습이라는 QECO-ADAPT의 핵심 학습 흐름을 설명할 수 있다.
 
-QECO-ADAPT의 핵심은 부하가 증가할수록 energy-aware behavior를 강화하되, 기존 QECO의 action structure를 크게 바꾸지 않는다는 점이다. 기존 QECO reward에서 energy term에 adaptive energy weight를 적용하고, 부하가 큰 상황에서 과도한 오프로딩 또는 에너지 소비가 발생하지 않도록 보수화 강도를 조절한다. 최근 WP-MEC의 online partial offloading 연구는 binary offloading보다 task 특성에 따라 offloading ratio를 유연하게 조절할 수 있음을 보이지만, 그만큼 feasible action space와 resource allocation 문제가 복잡해질 수 있다.[7] 본 연구의 QECO-ADAPT는 partial offloading 자체를 도입하지 않고, per-frame iterative solver를 추가하는 대신 닫힌형 수식으로 penalty strength를 조정한다. 이는 DROO 및 learning-to-optimize 계열 연구가 지적한 반복 최적화의 실시간 계산 부담을 고려해, 기존 QECO의 실행 구조를 유지하면서 부하 반응성을 추가하려는 설계이다.[1], [3]
+QECO-ADAPT의 핵심은 부하가 증가할수록 energy-aware behavior를 강화하되, 기존 QECO의 action structure를 크게 바꾸지 않는다는 점이다. 기존 QECO reward에서 energy term에 adaptive energy weight를 적용하고, 부하가 큰 상황에서 과도한 오프로딩 또는 에너지 소비가 발생하지 않도록 보수화 강도를 조절한다. 최근 WP-MEC의 online partial offloading 연구는 binary offloading보다 task 특성에 따라 offloading ratio를 유연하게 조절할 수 있음을 보이지만, 그만큼 feasible action space와 resource allocation 문제가 복잡해질 수 있다[7]. 본 연구의 QECO-ADAPT는 partial offloading 자체를 도입하지 않고, per-frame iterative solver를 추가하는 대신 닫힌형 수식으로 penalty strength를 조정한다. 이는 DROO 및 learning-to-optimize 계열 연구가 지적한 반복 최적화의 실시간 계산 부담을 고려해, 기존 QECO의 실행 구조를 유지하면서 부하 반응성을 추가하려는 설계이다[1][3].
 
 ### 2.3 전체 episode 평균 기준 성능 변화
 
