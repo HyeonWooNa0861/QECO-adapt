@@ -16,7 +16,7 @@
 
 QECO 원문은 기본 실험 환경으로 50 mobile devices (MDs)와 5 edge nodes (ENs)를 사용하므로, edge당 평균 사용자 밀도는 10 MDs/EN으로 볼 수 있다[2]. 본 분석에서는 이 값을 기준 밀도 $d_0=10$으로 두고, edge 수를 1로 고정한 상태에서 사용자 수를 10, 30, 50, 80으로 증가시켰다. 따라서 각 조건은 원문 QECO의 edge당 사용자 밀도 대비 1x, 3x, 5x, 8x dense stress condition으로 해석된다. 이 방식은 edge 확장 효과를 제거하고, 단일 edge node가 감당해야 하는 사용자 밀도 증가가 QECO-ADAPT의 성능에 어떤 영향을 미치는지 직접 관찰하기 위한 구성이다.
 
-본 분석에서는 전체 400 episode 평균을 주 비교 기준으로 사용한다. QECO-ADAPT의 핵심 이점은 최종 안정 구간에서의 일방적 우월성이 아니라, 학습 초반부터 QoE 손실과 dropped-task count 누적을 줄이는 수렴성에 있기 때문이다. 따라서 전체 episode 평균은 warm-up 구간에서의 손실까지 포함하는 지표로 사용한다. 반면 final 10% 평균은 후반 안정 구간에서 QECO-ADAPT가 기존 QECO의 성능을 얼마나 잘 따라가는지 확인하는 보조 지표로 해석한다.
+본 분석에서는 전체 400 episode 평균을 주 비교 기준으로 사용한다. QECO-ADAPT의 핵심 이점은 최종 안정 구간에서의 일방적 우월성이 아니라, 학습 초반부터 QoE 손실과 dropped-task count 누적을 줄이는 수렴성에 있기 때문이다. 따라서 전체 episode 평균은 warm-up 구간에서의 손실까지 포함하는 지표로 사용한다.
 
 평가 지표는 QoE, Delay, Energy, Dropped tasks, Runtime이다. QoE는 높을수록 좋고, Delay, Energy, Dropped tasks, Runtime은 낮을수록 좋다. 여기서 Dropped tasks는 전체 task 대비 drop probability가 아니라, 각 episode에서 deadline 내 완료되지 못한 task count의 평균값이다. 따라서 Dropped tasks의 변화율은 drop rate가 아니라 dropped-task count의 상대적 이득 또는 손실로 해석해야 한다.
 
