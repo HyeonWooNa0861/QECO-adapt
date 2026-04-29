@@ -61,7 +61,7 @@ $$
 
 여기서 $w_0$는 기본 energy weight, $\rho$는 부하 증가에 따른 weight 증가 곡률을 조절하는 exponent이다. 본 분석에서 사용한 값은 $w_0=1.20$, $\rho=0.35$, $\lambda=10$이다. $\rho<1$로 설정하면 부하가 증가하더라도 energy weight가 급격히 폭증하지 않고 완만하게 증가한다.
 
-마지막으로 이 adaptive energy weight는 기존 QECO reward의 energy cost 항에 반영된다. task $i$의 scaled energy를 $E_i^{scaled}$, delay를 $D_i$, 단말 energy state를 $s_i$, 최대 허용 delay를 $D_{\max}$라고 하면, QECO-ADAPT의 비용 항과 reward는 다음과 같이 표현된다.
+마지막으로 이 adaptive energy weight는 기존 QECO reward의 energy cost 항에 반영된다. 기존 QECO는 완료 task에 대해 completion reward에서 delay 및 energy cost를 차감하고, 미완료 task에는 penalty를 주는 QoE 구조를 사용한다[2]. task $i$의 scaled energy를 $E_i^{scaled}$, delay를 $D_i$, 단말 energy state를 $s_i$, 최대 허용 delay를 $D_{\max}$라고 하면, QECO-ADAPT의 비용 항과 reward는 다음과 같이 표현된다.
 
 $$
 C_i^{adapt}
@@ -69,14 +69,18 @@ C_i^{adapt}
 $$
 
 $$
+r_{\mathrm{done}}=\alpha D_{\max},\quad \alpha=4
+$$
+
+$$
 r_i^{adapt}=
 \begin{cases}
 -C_i^{adapt}, & \text{if unfinished}\\
-4D_{\max}-C_i^{adapt}, & \text{otherwise}
+r_{\mathrm{done}}-C_i^{adapt}, & \text{otherwise}
 \end{cases}
 $$
 
-여기서 unfinished task는 deadline 내 완료되지 못한 task를 의미한다. 따라서 QECO-ADAPT는 task가 완료되지 못한 경우에는 비용을 그대로 penalty로 부여하고, 완료된 경우에는 최대 허용 delay 기준 보상에서 adaptive cost를 차감한다. 위 식은 QECO-ADAPT가 기존 QECO reward 위에 추가한 부하 적응형 reward/control 항을 정의한다.
+여기서 unfinished task는 deadline 내 완료되지 못한 task를 의미하며, $r_{\mathrm{done}}$은 완료 task에 부여하는 기준 보상이다. $\alpha=4$는 QECO 논문에서 이론적으로 도출된 계수라기보다, 기존 QECO 공개 구현에서 사용된 completion reward scale을 공통 평가에서 유지한 calibration parameter로 해석한다. 본 설정에서는 $D_{\max}=10$이므로 $r_{\mathrm{done}}=40$이며, 이는 delay 및 scaled energy cost와 비교해 task completion 자체가 충분히 큰 양의 보상으로 작동하도록 하는 margin이다. 따라서 QECO-ADAPT는 completion reward scale은 기존 QECO와 같게 유지하고, 차이는 energy cost 항의 $w_E$와 부하 기반 gating에 둔다.
 
 딥러닝 학습 과정은 기존 QECO의 Dueling Double Deep Q-Network 구조를 따른다[2]. 다만 본 논문의 목적은 새로운 DQN 구조를 제안하는 것이 아니라, 기존 QECO 학습 루프 안에 부하 적응형 reward를 삽입하는 것이다. 따라서 학습 과정은 transition, Double DQN target, TD loss의 세 식으로 축약해 표현한다. 시점 $t$에서 관측 상태를 $o_t$, LSTM에 입력되는 최근 edge-load history를 $h_t$, 선택 action을 $a_t$, QECO-ADAPT reward를 $r_t^{adapt}$라고 하면 학습에 사용되는 transition은 다음과 같다.
 
