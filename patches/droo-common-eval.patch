@@ -2,7 +2,7 @@ diff --git a/mainPyTorch.py b/mainPyTorch.py
 index 7eca9f4..988750b 100644
 --- a/mainPyTorch.py
 +++ b/mainPyTorch.py
-@@ -28,15 +28,29 @@
+@@ -28,15 +28,32 @@
  
  import scipy.io as sio                     # import scipy.io for .mat file I/
  import numpy as np                         # import numpy
@@ -11,8 +11,11 @@ index 7eca9f4..988750b 100644
 +from pathlib import Path
 +
 +PARENT_DIR = Path(__file__).resolve().parent.parent
++MAIN_DIR = PARENT_DIR / "main"
 +if str(PARENT_DIR) not in sys.path:
 +    sys.path.insert(0, str(PARENT_DIR))
++if str(MAIN_DIR) not in sys.path:
++    sys.path.insert(0, str(MAIN_DIR))
  
  # Implementated based on the PyTorch 
  from memoryPyTorch import MemoryDNN
@@ -33,7 +36,7 @@ index 7eca9f4..988750b 100644
      import matplotlib.pyplot as plt
      import pandas as pd
      import matplotlib as mpl
-@@ -45,7 +59,10 @@ def plot_rate(rate_his, rolling_intv=50):
+@@ -45,7 +62,10 @@ def plot_rate(rate_his, rolling_intv=50):
      df = pd.DataFrame(rate_his)
  
  
@@ -45,7 +48,7 @@ index 7eca9f4..988750b 100644
      fig, ax = plt.subplots(figsize=(15, 8))
  #    rolling_intv = 20
  
-@@ -53,13 +70,70 @@ def plot_rate(rate_his, rolling_intv=50):
+@@ -53,13 +73,70 @@ def plot_rate(rate_his, rolling_intv=50):
      plt.fill_between(np.arange(len(rate_array))+1, np.hstack(df.rolling(rolling_intv, min_periods=1).min()[0].values), np.hstack(df.rolling(rolling_intv, min_periods=1).max()[0].values), color = 'b', alpha = 0.2)
      plt.ylabel('Normalized Computation Rate')
      plt.xlabel('Time Frames')
@@ -117,7 +120,7 @@ index 7eca9f4..988750b 100644
  if __name__ == "__main__":
      '''
          This algorithm generates K modes from DNN, and chooses with largest
-@@ -68,14 +142,31 @@ if __name__ == "__main__":
+@@ -68,14 +145,31 @@ if __name__ == "__main__":
          Adaptive K is implemented. K = max(K, K_his[-memory_size])
      '''
  
@@ -154,7 +157,7 @@ index 7eca9f4..988750b 100644
      # Load data
      channel = sio.loadmat('./data/data_%d' %N)['input_h']
      rate = sio.loadmat('./data/data_%d' %N)['output_obj'] # this rate is only used to plot figures; never used to train DROO.
-@@ -105,6 +196,11 @@ if __name__ == "__main__":
+@@ -105,6 +199,11 @@ if __name__ == "__main__":
      mode_his = []
      k_idx_his = []
      K_his = []
@@ -166,7 +169,7 @@ index 7eca9f4..988750b 100644
      for i in range(n):
          if i % (n//10) == 0:
             print("%0.1f"%(i/n))
-@@ -129,11 +225,16 @@ if __name__ == "__main__":
+@@ -129,11 +228,16 @@ if __name__ == "__main__":
          m_list = mem.decode(h, K, decoder_mode)
  
          r_list = []
@@ -185,7 +188,7 @@ index 7eca9f4..988750b 100644
          # the main code for DROO training ends here
  
  
-@@ -144,23 +245,96 @@ if __name__ == "__main__":
+@@ -144,23 +248,96 @@ if __name__ == "__main__":
          rate_his.append(np.max(r_list))
          rate_his_ratio.append(rate_his[-1] / rate[i_idx][0])
          # record the index of largest reward

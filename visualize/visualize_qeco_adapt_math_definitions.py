@@ -1,15 +1,31 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
+import sys
+import tempfile
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+MAIN_DIR = REPO_ROOT / "main"
+if str(MAIN_DIR) not in sys.path:
+    sys.path.insert(0, str(MAIN_DIR))
+
+os.environ.setdefault("MPLBACKEND", "Agg")
+if "MPLCONFIGDIR" not in os.environ:
+    mpl_config_dir = Path(tempfile.gettempdir()) / "qeco_adapt_mplconfig"
+    try:
+        mpl_config_dir.mkdir(parents=True, exist_ok=True)
+        os.environ["MPLCONFIGDIR"] = str(mpl_config_dir)
+    except OSError:
+        pass
 
 import matplotlib.pyplot as plt
 
 from common_experiment import SharedExperiment
 
 
-ROOT_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = ROOT_DIR / "experiment_results" / "formula_visualizations"
+OUTPUT_DIR = REPO_ROOT / "experiment_results" / "formula_visualizations"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -2,14 +2,17 @@ diff --git a/Config.py b/Config.py
 index 3d396d5..ff36beb 100644
 --- a/Config.py
 +++ b/Config.py
-@@ -1,8 +1,19 @@
+@@ -1,8 +1,22 @@
 +import sys
 +from pathlib import Path
 +
 +
 +PARENT_DIR = Path(__file__).resolve().parent.parent
++MAIN_DIR = PARENT_DIR / "main"
 +if str(PARENT_DIR) not in sys.path:
 +    sys.path.insert(0, str(PARENT_DIR))
++if str(MAIN_DIR) not in sys.path:
++    sys.path.insert(0, str(MAIN_DIR))
 +
 +from common_experiment import SharedExperiment
 +
@@ -24,7 +27,7 @@ index 3d396d5..ff36beb 100644
      UE_COMP_CAP      = 2.6                  # Mobile Device Computation Capacity
      UE_TRAN_CAP      = 14                   # Mobile Device Transmission Capacity
      EDGE_COMP_CAP    = 42                   # Edge Servers Computation Capacity
-@@ -22,15 +33,15 @@ class Config(object):
+@@ -22,15 +36,15 @@ class Config(object):
  
      TASK_MIN_SIZE    = 1
      TASK_MAX_SIZE    = 7
@@ -45,7 +48,7 @@ index 3d396d5..ff36beb 100644
      N_TIME = N_TIME_SLOT + MAX_DELAY
  
  
-@@ -40,4 +51,3 @@ class Config(object):
+@@ -40,4 +54,3 @@ class Config(object):
      E_GREEDY         = 0.99
      N_NETWORK_UPDATE = 200                  # Networks Parameter Replace
      MEMORY_SIZE      = 500                  # Replay Buffer Memory Size
@@ -90,7 +93,7 @@ diff --git a/main.py b/main.py
 index c0b92fc..386fcf9 100644
 --- a/main.py
 +++ b/main.py
-@@ -1,19 +1,38 @@
+@@ -1,19 +1,41 @@
 -from MEC_Env import MEC
 -from D3QN import DuelingDoubleDeepQNetwork
 -from Config import Config
@@ -111,8 +114,11 @@ index c0b92fc..386fcf9 100644
 +from pathlib import Path
 +
 +PARENT_DIR = Path(__file__).resolve().parent.parent
++MAIN_DIR = PARENT_DIR / "main"
 +if str(PARENT_DIR) not in sys.path:
 +    sys.path.insert(0, str(PARENT_DIR))
++if str(MAIN_DIR) not in sys.path:
++    sys.path.insert(0, str(MAIN_DIR))
 +
 +from MEC_Env import MEC
 +from D3QN import DuelingDoubleDeepQNetwork
@@ -145,7 +151,7 @@ index c0b92fc..386fcf9 100644
  
  
  
-@@ -78,11 +97,33 @@ def Cal_Delay(ue_RL_list, episode):
+@@ -78,11 +100,33 @@ def Cal_Delay(ue_RL_list, episode):
      avg_delay_in_episode = (sum(avg_delay_in_episode)/len(avg_delay_in_episode))
      return avg_delay_in_episode
  
@@ -184,7 +190,7 @@ index c0b92fc..386fcf9 100644
  
  '''
  def cal_reward(ue_RL_list):
-@@ -103,7 +144,7 @@ def cal_reward(ue_RL_list):
+@@ -103,7 +147,7 @@ def cal_reward(ue_RL_list):
  
  '''
  
@@ -193,7 +199,7 @@ index c0b92fc..386fcf9 100644
      avg_QoE_list = []
      avg_delay_list = []
      energy_cons_list = []
-@@ -324,20 +365,19 @@ def train(ue_RL_list, NUM_EPISODE):
+@@ -324,20 +368,19 @@ def train(ue_RL_list, NUM_EPISODE):
                  for ue in range(env.n_ue):
                      ue_RL_list[ue].learn()
  
@@ -227,7 +233,7 @@ index c0b92fc..386fcf9 100644
  
  
  
-@@ -374,18 +414,32 @@ def train(ue_RL_list, NUM_EPISODE):
+@@ -374,18 +417,32 @@ def train(ue_RL_list, NUM_EPISODE):
                  '''
  
                  
@@ -272,7 +278,7 @@ index c0b92fc..386fcf9 100644
  
  
                      
-@@ -465,7 +519,7 @@ def train(ue_RL_list, NUM_EPISODE):
+@@ -465,7 +522,7 @@ def train(ue_RL_list, NUM_EPISODE):
                      # Save the figure to a file
                      plt.tight_layout()
                      plt.subplots_adjust(top=0.9)
@@ -281,7 +287,7 @@ index c0b92fc..386fcf9 100644
                      #plt.show()
  
  
-@@ -484,13 +538,33 @@ def train(ue_RL_list, NUM_EPISODE):
+@@ -484,13 +541,33 @@ def train(ue_RL_list, NUM_EPISODE):
                  #print("Trans_Drop: ", env.drop_trans_count, "Edge_Drop: ", env.drop_edge_count, "UE_Drop: ", env.drop_ue_count)
                  #print("Drop_Count: ",Drop_Count(ue_RL_list, episode))
  
@@ -322,7 +328,7 @@ index c0b92fc..386fcf9 100644
  
      # GENERATE MULTIPLE CLASSES FOR RL
      ue_RL_list = list()
-@@ -512,13 +586,14 @@ if __name__ == "__main__":
+@@ -512,13 +589,14 @@ if __name__ == "__main__":
          ue_RL_list[ue].epsilon = 1
      '''
  

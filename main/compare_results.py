@@ -3,10 +3,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import tempfile
 from pathlib import Path
 from statistics import mean, median
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parents[1]
+os.environ.setdefault("MPLBACKEND", "Agg")
+if "MPLCONFIGDIR" not in os.environ:
+    mpl_config_dir = Path(tempfile.gettempdir()) / "qeco_adapt_mplconfig"
+    try:
+        mpl_config_dir.mkdir(parents=True, exist_ok=True)
+        os.environ["MPLCONFIGDIR"] = str(mpl_config_dir)
+    except OSError:
+        pass
 EXPERIMENT_ROOT = ROOT_DIR / "experiment_results"
 AVAILABLE_ALGORITHMS = ("droo", "qeco", "cd", "qeco_adapt", "twdqn")
 ALGORITHM_ALIASES = {"qeco-adapt": "qeco_adapt"}
@@ -510,7 +520,6 @@ def main() -> int:
     parser.add_argument("--cd-run", help="Optional explicit CD run directory.")
     parser.add_argument("--qeco-adapt-run", help="Optional explicit QECO-ADAPT run directory.")
     parser.add_argument("--twdqn-run", help="Optional explicit Tang&Wong DQN run directory.")
-    parser.add_argument("--hybrid-run", help="Optional explicit HYBRID-QECO run directory.")
     parser.add_argument(
         "--output-dir",
         help="Optional output directory for comparison charts. Defaults to a folder under experiment_results/comparisons.",

@@ -103,7 +103,7 @@ $$
 
 ![S6 smoothed episode time-series comparison](./experiment_results/comparisons/user_80_ep_400_edge_1/comparison_timeseries_smoothed.png)
 
-**Fig. 4. Smoothed Episode Time-Series Comparison under 8x Density.** **그림 4. 8x density 조건의 smoothed episode time-series 비교.** QECO-ADAPT의 이점은 final 구간의 단순 우세보다 episode 전반의 손실 누적 완화로 보는 것이 적절하다.
+**Fig. 4. Smoothed Episode-Wise Convergence Trend under 8x Density.** **그림 4. 8x density 조건의 smoothed episode별 수렴 추이.** QECO-ADAPT는 QoE, Delay, Dropped tasks에서 episode 진행에 따라 수렴 지향 개선을 보이며, 이는 final 구간의 단순 우세보다 warm-up 손실 완화 관점에서 해석하는 것이 적절하다.
 
 ### 2.4 후반 안정 구간과 QECO 추종성
 

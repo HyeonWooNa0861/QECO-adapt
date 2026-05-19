@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import json
 import random
-import shutil
 import time
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parents[1]
 
 
 class SharedExperiment:
@@ -28,12 +27,6 @@ class SharedExperiment:
     QECO_USER_ACTIVITY_MIN = 0.7
     QECO_USER_ACTIVITY_MAX = 1.3
     COMPARISON_POINTS = QECO_EPISODES
-    HYBRID_ALPHA = 0.15
-    HYBRID_BETA = 0.65
-    HYBRID_EPSILON = 0.25
-    HYBRID_CD_LAMBDA = 0.08
-    HYBRID_QOE_MIN = -20.0
-    HYBRID_THROUGHPUT_REF = 10.0
     QECO_ADAPT_BASE_ENERGY_WEIGHT = 1.20
     QECO_ADAPT_USER_EXPONENT = 0.35
     QECO_ADAPT_LOAD_SCALE = 10.0
@@ -66,14 +59,6 @@ class SharedExperiment:
                     "base_profile": cls.QECO_ARRIVAL_BASE_PROFILE,
                     "user_activity_min": cls.QECO_USER_ACTIVITY_MIN,
                     "user_activity_max": cls.QECO_USER_ACTIVITY_MAX,
-                },
-                "hybrid_reward": {
-                    "alpha": cls.HYBRID_ALPHA,
-                    "beta": cls.HYBRID_BETA,
-                    "epsilon": cls.HYBRID_EPSILON,
-                    "cd_lambda": cls.HYBRID_CD_LAMBDA,
-                    "qoe_min": cls.HYBRID_QOE_MIN,
-                    "throughput_ref": cls.HYBRID_THROUGHPUT_REF,
                 },
                 "qeco_adapt": {
                     "base_energy_weight": cls.QECO_ADAPT_BASE_ENERGY_WEIGHT,
@@ -127,14 +112,6 @@ def apply_global_seed(seed: int, *, use_torch: bool = False, use_tensorflow: boo
 
 def create_run_dir(algorithm: str) -> Path:
     run_dir = SharedExperiment.RESULT_ROOT / algorithm / time.strftime("run_%Y%m%d_%H%M%S")
-    run_dir.mkdir(parents=True, exist_ok=True)
-    return run_dir
-
-
-def create_named_run_dir(algorithm: str, name: str, *, overwrite: bool = False) -> Path:
-    run_dir = SharedExperiment.RESULT_ROOT / algorithm / name
-    if overwrite and run_dir.exists():
-        shutil.rmtree(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     return run_dir
 

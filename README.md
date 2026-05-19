@@ -17,40 +17,46 @@ Additional analysis report:
 Run one common-environment algorithm:
 
 ```bash
-python3 QECO_DROO.py --execute common-run qeco
-python3 QECO_DROO.py --execute common-run qeco-adapt
-python3 QECO_DROO.py --execute common-run droo
-python3 QECO_DROO.py --execute common-run twdqn
+python3 main/QECO_DROO.py --execute common-run qeco
+python3 main/QECO_DROO.py --execute common-run qeco-adapt
+python3 main/QECO_DROO.py --execute common-run droo
+python3 main/QECO_DROO.py --execute common-run twdqn
 ```
 
 Create comparison charts:
 
 ```bash
-python3 QECO_DROO.py --execute compare
+python3 main/QECO_DROO.py --execute compare
 ```
 
 Create CD/QECO/QECO-ADAPT comparison:
 
 ```bash
-python3 QECO_DROO.py --execute compare-cqa
+python3 main/QECO_DROO.py --execute compare-cqa
 ```
 
 Regenerate formula visualizations:
 
 ```bash
-/home/wsl/Alpha_1/env_qeco/bin/python visualize_metric_formulas.py
-/home/wsl/Alpha_1/env_qeco/bin/python visualize_adapt_formula.py
-/home/wsl/Alpha_1/env_qeco/bin/python visualize_qeco_adapt_math_definitions.py
-/home/wsl/Alpha_1/env_qeco/bin/python visualize_qeco_adapt_constant_calibration.py
+env_qeco/bin/python visualize/visualize_metric_formulas.py
+env_qeco/bin/python visualize/visualize_adapt_formula.py
+env_qeco/bin/python visualize/visualize_qeco_adapt_math_definitions.py
+env_qeco/bin/python visualize/visualize_qeco_adapt_constant_calibration.py
 ```
+
+On macOS Apple Silicon, recreate the virtual environments locally rather than
+reusing Linux/WSL venv directories. The QECO environment uses
+`tensorflow-macos==2.8.0` with `numpy<1.24`; Matplotlib scripts default to a
+headless backend for local and remote runs.
 
 ## Repository Layout
 
-- `QECO_DROO.py`: CLI wrapper for setup, common runs, and comparison generation.
-- `common_experiment.py`: shared experiment configuration.
-- `common_eval.py`: common MEC evaluation runner.
-- `compare_results.py`: comparison chart and final-summary generator.
-- `baselines/`: additional baseline policies.
+- `main/QECO_DROO.py`: CLI wrapper for setup, common runs, and comparison generation.
+- `main/common_experiment.py`: shared experiment configuration.
+- `main/common_eval.py`: common MEC evaluation runner.
+- `main/compare_results.py`: comparison chart and final-summary generator.
+- `main/baselines/`: additional baseline policies.
+- `visualize/`: formula visualization scripts.
 - `patches/`: local modifications applied to upstream DROO/QECO repositories for the shared evaluation pipeline.
 - `experiment_results/comparisons/`: tracked comparison outputs used by the paper.
 - `experiment_results/formula_visualizations/`: tracked formula figures referenced by the paper.
@@ -83,8 +89,8 @@ The runtime summary used by the manuscript discussion is available at:
 The upstream DROO and QECO repositories are cloned locally when running:
 
 ```bash
-python3 QECO_DROO.py --execute clone droo
-python3 QECO_DROO.py --execute clone qeco
+python3 main/QECO_DROO.py --execute clone droo
+python3 main/QECO_DROO.py --execute clone qeco
 ```
 
 After cloning, apply the shared-evaluation patches:
@@ -94,7 +100,7 @@ git -C DROO apply ../patches/droo-common-eval.patch
 git -C QECO apply ../patches/qeco-common-eval.patch
 ```
 
-These patches align the upstream baseline code with `common_experiment.py` and the current paper's shared MEC setting.
+These patches align the upstream baseline code with `main/common_experiment.py` and the current paper's shared MEC setting.
 
 ## Git Tracking Policy
 

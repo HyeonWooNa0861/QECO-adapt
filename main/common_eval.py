@@ -3,18 +3,19 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+MAIN_DIR = Path(__file__).resolve().parent
+ROOT_DIR = MAIN_DIR.parent
 QECO_DIR = ROOT_DIR / "QECO"
 DROO_DIR = ROOT_DIR / "DROO"
 
+if str(MAIN_DIR) not in sys.path:
+    sys.path.insert(0, str(MAIN_DIR))
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 if str(QECO_DIR) not in sys.path:
@@ -22,26 +23,14 @@ if str(QECO_DIR) not in sys.path:
 if str(DROO_DIR) not in sys.path:
     sys.path.insert(0, str(DROO_DIR))
 
-from baselines import CDBinaryOffloadPolicy, build_twdqn_agents, hybrid_reward_components, hybrid_reward_function
+from baselines import CDBinaryOffloadPolicy, build_twdqn_agents
 from common_experiment import (
     SharedExperiment,
     apply_global_seed,
-    create_named_run_dir,
     create_run_dir,
     resample_series,
     write_experiment_snapshot,
 )
-
-
-@dataclass(frozen=True)
-class HybridRewardConfig:
-    alpha: float
-    beta: float
-    epsilon: float
-    cd_lambda: float
-    qoe_min: float
-    throughput_ref: float
-    tag: str | None = None
 
 
 def save_series(values, path: Path) -> None:
@@ -234,23 +223,26 @@ def save_common_outputs(run_dir: Path, episode_metrics: dict[str, list[float]], 
         json.dump(metadata, f, indent=2)
 
 
-def save_hybrid_contributions(run_dir: Path, contribution_log: dict[str, list[float]]) -> None:
-    with open(run_dir / "HybridRewardContributions.json", "w") as f:
-        json.dump(contribution_log, f, indent=2)
-
-
-def algorithm_log_label(algorithm_name: str, hybrid_config: HybridRewardConfig | None = None) -> str:
-    if algorithm_name != "hybrid":
-        if algorithm_name == "qeco_adapt":
-            return "QECO-ADAPT"
-        return algorithm_name.upper()
-    if hybrid_config and hybrid_config.tag:
-        return f"HYBRID-{hybrid_config.tag.upper()}"
-    return "HYBRID"
+def algorithm_log_label(algorithm_name: str) -> str:
+    if algorithm_name == "qeco_adapt":
+        return "QECO-ADAPT"
+    return algorithm_name.upper()
 
 
 def normalize_algorithm_name(algorithm_name: str) -> str:
     return "qeco_adapt" if algorithm_name == "qeco-adapt" else algorithm_name
+
+
+def qeco_style_policy_name(algorithm_name: str) -> str:
+    policy_names = {
+        "qeco": "qeco_d3qn_lstm",
+        "qeco_adapt": "qeco_adapt_energy_aware_gating_d3qn_lstm",
+        "twdqn": "tang_wong_adapted_dqn",
+    }
+    try:
+        return policy_names[algorithm_name]
+    except KeyError as exc:
+        raise ValueError(f"Unknown QECO-style algorithm: {algorithm_name}") from exc
 
 
 def run_binary_offload_common(algorithm_name: str, policy_name: str) -> Path:
@@ -372,38 +364,7 @@ def reward_for_algorithm(
     env,
     ue_index: int,
     time_index: int,
-    hybrid_config: HybridRewardConfig | None = None,
-    action: int | None = None,
-    cd_action: int | None = None,
 ):
-    if algorithm_name == "hybrid":
-        if hybrid_config is None:
-            raise ValueError("hybrid_config is required for hybrid reward")
-        if action is None or cd_action is None:
-            raise ValueError("action and cd_action are required for hybrid reward")
-        return hybrid_reward_components(
-            qoe_function=qoe_function,
-            normalize_function=normalize,
-            delay=env.process_delay[time_index, ue_index],
-            max_delay=env.max_delay,
-            unfinish_task=env.unfinish_task[time_index, ue_index],
-            ue_energy_state=env.ue_energy_state[ue_index],
-            ue_comp_energy=env.ue_comp_energy[time_index, ue_index],
-            ue_tran_energy=env.ue_tran_energy[time_index, ue_index],
-            edge_comp_energy=env.edge_comp_energy[time_index, ue_index],
-            ue_idle_energy=env.ue_idle_energy[time_index, ue_index],
-            ue_bit_processed=env.ue_bit_processed[time_index, ue_index],
-            ue_bit_transmitted=env.ue_bit_transmitted[time_index, ue_index],
-            alpha=hybrid_config.alpha,
-            beta=hybrid_config.beta,
-            epsilon=hybrid_config.epsilon,
-            cd_lambda=hybrid_config.cd_lambda,
-            action=action,
-            cd_action=cd_action,
-            qoe_min=hybrid_config.qoe_min,
-            throughput_ref=hybrid_config.throughput_ref,
-        )
-
     if algorithm_name == "qeco_adapt":
         return {
             "reward": qeco_adapt_reward_function(
@@ -433,7 +394,7 @@ def reward_for_algorithm(
     }
 
 
-def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig | None = None) -> Path:
+def run_qeco_style_common(algorithm_name: str) -> Path:
     import numpy as np
     import tensorflow.compat.v1 as tf
     from Config import Config
@@ -441,11 +402,8 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
     from MEC_Env import MEC
 
     apply_global_seed(SharedExperiment.RANDOM_SEED, use_tensorflow=True)
-    if algorithm_name == "hybrid" and hybrid_config and hybrid_config.tag == "tuned":
-        run_dir = create_named_run_dir(algorithm_name, "tuned_current", overwrite=True)
-    else:
-        run_dir = create_run_dir(algorithm_name)
-    log_label = algorithm_log_label(algorithm_name, hybrid_config)
+    run_dir = create_run_dir(algorithm_name)
+    log_label = algorithm_log_label(algorithm_name)
     models_dir = run_dir / "models"
     models_dir.mkdir(parents=True, exist_ok=True)
     write_experiment_snapshot(
@@ -454,28 +412,7 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
             "algorithm": algorithm_name.upper(),
             "evaluation_mode": "common_env",
             "models_dir": str(models_dir),
-            "policy": (
-                "qeco_d3qn_lstm"
-                if algorithm_name == "qeco"
-                else "qeco_adapt_energy_aware_gating_d3qn_lstm"
-                if algorithm_name == "qeco_adapt"
-                else "tang_wong_adapted_dqn"
-                if algorithm_name == "twdqn"
-                else "hybrid_qeco_reward"
-            ),
-            "hybrid_reward": (
-                {
-                    "alpha": hybrid_config.alpha,
-                    "beta": hybrid_config.beta,
-                    "epsilon": hybrid_config.epsilon,
-                    "cd_lambda": hybrid_config.cd_lambda,
-                    "qoe_min": hybrid_config.qoe_min,
-                    "throughput_ref": hybrid_config.throughput_ref,
-                    "tag": hybrid_config.tag,
-                }
-                if algorithm_name == "hybrid" and hybrid_config is not None
-                else None
-            ),
+            "policy": qeco_style_policy_name(algorithm_name),
             "qeco_adapt_reward": (
                 {
                     "effective_load": qeco_adapt_effective_load(),
@@ -516,13 +453,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
 
     tf.set_random_seed(SharedExperiment.RANDOM_SEED)
     episode_metrics = {"qoe": [], "delay": [], "energy": [], "drop": [], "episode_runtime": []}
-    hybrid_contribution_log = {
-        "throughput_term_mean": [],
-        "qoe_term_mean": [],
-        "drop_penalty_term_mean": [],
-        "cd_alignment_term_mean": [],
-        "reward_mean": [],
-    }
     rl_step = 0
 
     for episode in range(Config.N_EPISODE):
@@ -530,15 +460,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
         if episode % 20 == 0:
             print(f"[{log_label} common] episode {episode}/{Config.N_EPISODE}")
         bitarrive_size, bitarrive_dens = build_task_arrivals(env, Config, np)
-        cd_action_guidance = None
-        if algorithm_name == "hybrid":
-            from optimization import cd_method
-
-            channel_traces = generate_channel_traces(env.n_time, env.n_ue, np)
-            cd_action_guidance = np.zeros([env.n_time, env.n_ue], dtype=int)
-            for time_index in range(env.n_time):
-                _, cd_mode = cd_method(channel_traces[time_index, :])
-                cd_action_guidance[time_index, :] = np.asarray(cd_mode, dtype=int)
         history = []
         for time_index in range(env.n_time):
             history.append([])
@@ -553,13 +474,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
                     }
                 )
         reward_indicator = np.zeros([env.n_time, env.n_ue])
-        episode_reward_terms = {
-            "throughput_term": [],
-            "qoe_term": [],
-            "drop_penalty_term": [],
-            "cd_alignment_term": [],
-            "reward": [],
-        }
         observation_all, lstm_state_all = env.reset(bitarrive_size, bitarrive_dens)
         done = False
 
@@ -599,13 +513,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
                             env,
                             ue_index,
                             time_index,
-                            hybrid_config,
-                            action=(
-                                int(history[time_index][ue_index]["action"])
-                                if algorithm_name == "hybrid"
-                                else None
-                            ),
-                            cd_action=int(cd_action_guidance[time_index, ue_index]) if algorithm_name == "hybrid" else None,
                         )
                         reward = reward_info["reward"]
                         ue_RL_list[ue_index].store_transition(
@@ -626,12 +533,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
                             env.edge_comp_energy[time_index, ue_index],
                             env.ue_idle_energy[time_index, ue_index],
                         )
-                        if algorithm_name == "hybrid":
-                            episode_reward_terms["throughput_term"].append(reward_info["throughput_term"])
-                            episode_reward_terms["qoe_term"].append(reward_info["qoe_term"])
-                            episode_reward_terms["drop_penalty_term"].append(reward_info["drop_penalty_term"])
-                            episode_reward_terms["cd_alignment_term"].append(reward_info["cd_alignment_term"])
-                            episode_reward_terms["reward"].append(reward_info["reward"])
                         reward_indicator[time_index, ue_index] = 1
 
             rl_step += 1
@@ -649,41 +550,12 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
                 continue
             episode_metrics[key].append(metrics[key])
         episode_metrics["episode_runtime"].append(time.perf_counter() - episode_start)
-        if algorithm_name == "hybrid":
-            hybrid_contribution_log["throughput_term_mean"].append(
-                float(sum(episode_reward_terms["throughput_term"]) / len(episode_reward_terms["throughput_term"]))
-                if episode_reward_terms["throughput_term"] else 0.0
-            )
-            hybrid_contribution_log["qoe_term_mean"].append(
-                float(sum(episode_reward_terms["qoe_term"]) / len(episode_reward_terms["qoe_term"]))
-                if episode_reward_terms["qoe_term"] else 0.0
-            )
-            hybrid_contribution_log["drop_penalty_term_mean"].append(
-                float(sum(episode_reward_terms["drop_penalty_term"]) / len(episode_reward_terms["drop_penalty_term"]))
-                if episode_reward_terms["drop_penalty_term"] else 0.0
-            )
-            hybrid_contribution_log["cd_alignment_term_mean"].append(
-                float(sum(episode_reward_terms["cd_alignment_term"]) / len(episode_reward_terms["cd_alignment_term"]))
-                if episode_reward_terms["cd_alignment_term"] else 0.0
-            )
-            hybrid_contribution_log["reward_mean"].append(
-                float(sum(episode_reward_terms["reward"]) / len(episode_reward_terms["reward"]))
-                if episode_reward_terms["reward"] else 0.0
-            )
         if episode % 20 == 0:
             print(
                 f"[{log_label} common] qoe={metrics['qoe']:.3f} delay={metrics['delay']:.3f} "
                 f"energy={metrics['energy']:.3f} drop={metrics['drop']:.1f} "
                 f"ep_time={episode_metrics['episode_runtime'][-1]:.4f}s"
             )
-            if algorithm_name == "hybrid":
-                print(
-                    f"[{log_label} reward] throughput={hybrid_contribution_log['throughput_term_mean'][-1]:.4f} "
-                    f"qoe={hybrid_contribution_log['qoe_term_mean'][-1]:.4f} "
-                    f"drop_penalty={hybrid_contribution_log['drop_penalty_term_mean'][-1]:.4f} "
-                    f"cd_align={hybrid_contribution_log['cd_alignment_term_mean'][-1]:.4f} "
-                    f"reward={hybrid_contribution_log['reward_mean'][-1]:.4f}"
-                )
 
     save_common_outputs(
         run_dir,
@@ -693,29 +565,8 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
             "evaluation_mode": "common_env",
             "common_axis": "episode",
             "comparison_points": SharedExperiment.COMPARISON_POINTS,
-            "policy": (
-                "qeco_d3qn_lstm"
-                if algorithm_name == "qeco"
-                else "qeco_adapt_energy_aware_gating_d3qn_lstm"
-                if algorithm_name == "qeco_adapt"
-                else "tang_wong_adapted_dqn"
-                if algorithm_name == "twdqn"
-                else "hybrid_qeco_reward"
-            ),
+            "policy": qeco_style_policy_name(algorithm_name),
             "runtime_metric": "per_episode_wall_clock_seconds",
-            "hybrid_reward": (
-                {
-                    "alpha": hybrid_config.alpha,
-                    "beta": hybrid_config.beta,
-                    "epsilon": hybrid_config.epsilon,
-                    "cd_lambda": hybrid_config.cd_lambda,
-                    "qoe_min": hybrid_config.qoe_min,
-                    "throughput_ref": hybrid_config.throughput_ref,
-                    "tag": hybrid_config.tag,
-                }
-                if algorithm_name == "hybrid" and hybrid_config is not None
-                else None
-            ),
             "qeco_adapt_reward": (
                 {
                     "effective_load": qeco_adapt_effective_load(),
@@ -727,8 +578,6 @@ def run_qeco_style_common(algorithm_name: str, hybrid_config: HybridRewardConfig
             ),
         },
     )
-    if algorithm_name == "hybrid":
-        save_hybrid_contributions(run_dir, hybrid_contribution_log)
     return run_dir
 
 
@@ -744,28 +593,9 @@ def run_twdqn_common() -> Path:
     return run_qeco_style_common("twdqn")
 
 
-def run_hybrid_common(alpha: float, beta: float, epsilon: float, tag: str | None = None) -> Path:
-    return run_qeco_style_common(
-        "hybrid",
-        HybridRewardConfig(
-            alpha=alpha,
-            beta=beta,
-            epsilon=epsilon,
-            cd_lambda=SharedExperiment.HYBRID_CD_LAMBDA,
-            qoe_min=SharedExperiment.HYBRID_QOE_MIN,
-            throughput_ref=SharedExperiment.HYBRID_THROUGHPUT_REF,
-            tag=tag,
-        ),
-    )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run baselines inside the shared common evaluation environment.")
-    parser.add_argument("algorithm", choices=["droo", "qeco", "qeco_adapt", "qeco-adapt", "cd", "twdqn", "hybrid"])
-    parser.add_argument("--alpha", type=float, default=SharedExperiment.HYBRID_ALPHA)
-    parser.add_argument("--beta", type=float, default=SharedExperiment.HYBRID_BETA)
-    parser.add_argument("--epsilon", type=float, default=SharedExperiment.HYBRID_EPSILON)
-    parser.add_argument("--tag")
+    parser.add_argument("algorithm", choices=["droo", "qeco", "qeco_adapt", "qeco-adapt", "cd", "twdqn"])
     args = parser.parse_args()
 
     os.chdir(str(ROOT_DIR))
@@ -778,8 +608,6 @@ def main() -> int:
         run_dir = run_qeco_adapt_common()
     elif algorithm == "twdqn":
         run_dir = run_twdqn_common()
-    elif algorithm == "hybrid":
-        run_dir = run_hybrid_common(args.alpha, args.beta, args.epsilon, args.tag)
     else:
         run_dir = run_qeco_common()
 

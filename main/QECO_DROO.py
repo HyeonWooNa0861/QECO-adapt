@@ -8,9 +8,11 @@ This script does not assume the repositories already exist, and it defaults to
 from __future__ import annotations
 
 import argparse
+import os
 import shlex
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List
@@ -18,8 +20,9 @@ from typing import Iterable, List
 from common_experiment import SharedExperiment
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_BASE_DIR = SCRIPT_DIR
+MAIN_DIR = Path(__file__).resolve().parent
+ROOT_DIR = MAIN_DIR.parent
+DEFAULT_BASE_DIR = ROOT_DIR
 ALGORITHM_ALIASES = {"qeco-adapt": "qeco_adapt"}
 
 
@@ -100,13 +103,26 @@ def shell_join(parts: Iterable[str]) -> str:
     return " ".join(shlex.quote(part) for part in parts)
 
 
+def subprocess_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env.setdefault("MPLBACKEND", "Agg")
+    if "MPLCONFIGDIR" not in env:
+        mpl_config_dir = Path(tempfile.gettempdir()) / "qeco_adapt_mplconfig"
+        try:
+            mpl_config_dir.mkdir(parents=True, exist_ok=True)
+            env["MPLCONFIGDIR"] = str(mpl_config_dir)
+        except OSError:
+            pass
+    return env
+
+
 def run_shell(command: List[str], execute: bool, cwd: Path | None = None) -> int:
     text = shell_join(command)
     location = f"  [cwd: {cwd}]" if cwd else ""
     print(f"$ {text}{location}")
     if not execute:
         return 0
-    completed = subprocess.run(command, cwd=str(cwd) if cwd else None, check=False)
+    completed = subprocess.run(command, cwd=str(cwd) if cwd else None, check=False, env=subprocess_env())
     return completed.returncode
 
 
@@ -174,10 +190,6 @@ def print_project_info(config: ProjectConfig, framework: str | None = None) -> N
     print(f"  - qeco_arrival_base_profile: {SharedExperiment.QECO_ARRIVAL_BASE_PROFILE}")
     print(f"  - qeco_user_activity_range: ({SharedExperiment.QECO_USER_ACTIVITY_MIN}, {SharedExperiment.QECO_USER_ACTIVITY_MAX})")
     print(f"  - comparison_points: {SharedExperiment.COMPARISON_POINTS}")
-    print(f"  - hybrid_alpha: {SharedExperiment.HYBRID_ALPHA}")
-    print(f"  - hybrid_beta: {SharedExperiment.HYBRID_BETA}")
-    print(f"  - hybrid_epsilon: {SharedExperiment.HYBRID_EPSILON}")
-    print(f"  - hybrid_cd_lambda: {SharedExperiment.HYBRID_CD_LAMBDA}")
     print(f"  - qeco_adapt_base_energy_weight: {SharedExperiment.QECO_ADAPT_BASE_ENERGY_WEIGHT}")
     print(f"  - qeco_adapt_user_exponent: {SharedExperiment.QECO_ADAPT_USER_EXPONENT}")
     print(f"  - qeco_adapt_load_scale: {SharedExperiment.QECO_ADAPT_LOAD_SCALE}")
@@ -277,7 +289,7 @@ def handle_run(args: argparse.Namespace) -> int:
 
 
 def handle_compare(args: argparse.Namespace) -> int:
-    compare_script = SCRIPT_DIR / "compare_results.py"
+    compare_script = MAIN_DIR / "compare_results.py"
     python_bin = venv_python(PROJECTS["qeco"].env_dir)
     if not python_bin.exists():
         print("QECO virtual environment is missing. Create it first with:")
@@ -297,13 +309,11 @@ def handle_compare(args: argparse.Namespace) -> int:
         command.extend(["--twdqn-run", args.twdqn_run])
     if getattr(args, "algorithms", None):
         command.extend(["--algorithms", *args.algorithms])
-    if args.hybrid_run:
-        command.extend(["--hybrid-run", args.hybrid_run])
     if args.output_dir:
         command.extend(["--output-dir", args.output_dir])
     if args.smoothing_window:
         command.extend(["--smoothing-window", str(args.smoothing_window)])
-    return run_shell(command, execute=args.execute, cwd=SCRIPT_DIR)
+    return run_shell(command, execute=args.execute, cwd=ROOT_DIR)
 
 
 def handle_compare_cqa(args: argparse.Namespace) -> int:
@@ -313,7 +323,6 @@ def handle_compare_cqa(args: argparse.Namespace) -> int:
         cd_run=args.cd_run,
         qeco_adapt_run=args.qeco_adapt_run,
         twdqn_run=None,
-        hybrid_run=None,
         algorithms=["cd", "qeco", "qeco_adapt"],
         output_dir=args.output_dir,
         smoothing_window=args.smoothing_window,
@@ -325,7 +334,7 @@ def handle_compare_cqa(args: argparse.Namespace) -> int:
 
 def handle_common_run(args: argparse.Namespace) -> int:
     project_key = normalize_algorithm_name(args.algorithm)
-    env_key = "qeco" if project_key in {"qeco", "qeco_adapt", "twdqn", "hybrid"} else "droo"
+    env_key = "qeco" if project_key in {"qeco", "qeco_adapt", "twdqn"} else "droo"
     config = PROJECTS[env_key]
     python_bin = venv_python(config.env_dir)
     if not python_bin.exists():
@@ -333,7 +342,7 @@ def handle_common_run(args: argparse.Namespace) -> int:
         print(f"$ {shell_join([args.python_bin, '-m', 'venv', str(config.env_dir)])}")
         return 1
 
-    target = SCRIPT_DIR / "common_eval.py"
+    target = MAIN_DIR / "common_eval.py"
     print(f"[COMMON {display_algorithm_name(project_key)}]")
     print(f"- shared_users: {SharedExperiment.NUM_USERS}")
     print(f"- shared_edges: {SharedExperiment.NUM_EDGES}")
@@ -341,15 +350,7 @@ def handle_common_run(args: argparse.Namespace) -> int:
     print(f"- shared_seed: {SharedExperiment.RANDOM_SEED}")
     print(f"- qeco_episodes: {SharedExperiment.QECO_EPISODES}")
     print(f"- comparison_points: {SharedExperiment.COMPARISON_POINTS}")
-    if project_key == "hybrid":
-        print(f"- reward: hybrid_qeco_reward")
-        print(f"- alpha: {args.alpha}")
-        print(f"- beta: {args.beta}")
-        print(f"- epsilon: {args.epsilon}")
-        print(f"- cd_lambda: {SharedExperiment.HYBRID_CD_LAMBDA}")
-        if args.tag:
-            print(f"- tag: {args.tag}")
-    elif project_key == "qeco_adapt":
+    if project_key == "qeco_adapt":
         print(f"- reward: qeco_adapt_energy_aware_adaptive_reward")
         base_profile_mean = sum(SharedExperiment.QECO_ARRIVAL_BASE_PROFILE) / len(SharedExperiment.QECO_ARRIVAL_BASE_PROFILE)
         user_activity_mean = (SharedExperiment.QECO_USER_ACTIVITY_MIN + SharedExperiment.QECO_USER_ACTIVITY_MAX) / 2.0
@@ -369,11 +370,7 @@ def handle_common_run(args: argparse.Namespace) -> int:
         print(f"- size_threshold: {SharedExperiment.QECO_ADAPT_SIZE_THRESHOLD}")
     command_algorithm = "qeco-adapt" if project_key == "qeco_adapt" else project_key
     command = [str(python_bin), str(target), command_algorithm]
-    if project_key == "hybrid":
-        command.extend(["--alpha", str(args.alpha), "--beta", str(args.beta), "--epsilon", str(args.epsilon)])
-        if args.tag:
-            command.extend(["--tag", args.tag])
-    return run_shell(command, execute=args.execute, cwd=SCRIPT_DIR)
+    return run_shell(command, execute=args.execute, cwd=ROOT_DIR)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -434,7 +431,6 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser.add_argument("--cd-run", help="Optional explicit CD run directory.")
     compare_parser.add_argument("--qeco-adapt-run", help="Optional explicit QECO-ADAPT run directory.")
     compare_parser.add_argument("--twdqn-run", help="Optional explicit Tang&Wong DQN run directory.")
-    compare_parser.add_argument("--hybrid-run", help="Optional explicit HYBRID-QECO run directory.")
     compare_parser.add_argument(
         "--algorithms",
         nargs="+",
@@ -478,13 +474,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     common_run_parser = subparsers.add_parser(
         "common-run",
-        help="Run DROO, QECO, QECO-ADAPT, CD, Tang&Wong DQN, or HYBRID-QECO inside the shared common evaluation environment.",
+        help="Run DROO, QECO, QECO-ADAPT, CD, or Tang&Wong DQN inside the shared common evaluation environment.",
     )
-    common_run_parser.add_argument("algorithm", choices=["droo", "qeco", "qeco_adapt", "qeco-adapt", "cd", "twdqn", "hybrid"])
-    common_run_parser.add_argument("--alpha", type=float, default=SharedExperiment.HYBRID_ALPHA)
-    common_run_parser.add_argument("--beta", type=float, default=SharedExperiment.HYBRID_BETA)
-    common_run_parser.add_argument("--epsilon", type=float, default=SharedExperiment.HYBRID_EPSILON)
-    common_run_parser.add_argument("--tag", help="Optional label for hybrid-only studies.")
+    common_run_parser.add_argument("algorithm", choices=["droo", "qeco", "qeco_adapt", "qeco-adapt", "cd", "twdqn"])
     common_run_parser.add_argument(
         "--python-bin",
         default=sys.executable or "python3",
